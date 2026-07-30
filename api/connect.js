@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Koneksi ke Database Neon via Environment Variable
+  // Ambil Connection String Neon dari Environment Variable Vercel
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     return res.status(500).json({ 
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
   const sql = neon(databaseUrl);
 
-  // Inisialisasi Otomatis Tabel 'scripts' di Neon jika belum ada
+  // Otomatis buat tabel 'scripts' di Neon DB jika belum ada
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS scripts (
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 
   const { action, id, name, luaCode, expireDays } = req.body || {};
 
-  // 1. ACTION: FETCH (Metode POST dari Executor Roblox)
+  // 1. FETCH SCRIPT (Untuk Executor Roblox / Loader)
   if (action === 'fetch') {
     try {
       const rows = await sql`SELECT * FROM scripts WHERE id = ${id}`;
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // 2. ACTION: CREATE (Deploy Script Baru ke Neon DB)
+  // 2. CREATE SCRIPT
   if (action === 'create') {
     try {
       const newId = Math.random().toString(36).substring(2, 10);
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // 3. ACTION: LIST (Ambil Semua Script dari Neon DB)
+  // 3. LIST ALL SCRIPTS
   if (action === 'list') {
     try {
       const rows = await sql`SELECT * FROM scripts ORDER BY created_at DESC`;
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // 4. ACTION: UPDATE (Edit Script)
+  // 4. UPDATE SCRIPT
   if (action === 'update') {
     try {
       const expiresAt = Date.now() + (parseInt(expireDays) * 86400000);
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // 5. ACTION: DELETE
+  // 5. DELETE SCRIPT
   if (action === 'delete') {
     try {
       await sql`DELETE FROM scripts WHERE id = ${id}`;
