@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/uploadsscript/script.lua", "destination": "/api/stage1" },
+    { "source": "/s.php", "destination": "/api/stage2" },
+    { "source": "/validate.php", "destination": "/api/stage3" }
+  ]
+}
