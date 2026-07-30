@@ -8,179 +8,108 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // PROTEKSI BROWSER TINGKAT TINGGI
-  // Wajib POST dan Wajib memiliki header khusus "X-Nexus-Shield: Active"
+  // STRICT SERVER PROTECTION
   if (req.method !== 'POST' || req.headers['x-nexus-shield'] !== 'Active') {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(403).send(`
-      <!DOCTYPE html><html><head><title>Forbidden</title><style>body{background:#0b0f19;color:#ef4444;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}</style></head>
-      <body><h2>⛔ 403 FORBIDDEN - ACCESS DENIED</h2></body></html>
-    `);
+    return res.status(403).send('Forbidden.');
   }
 
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) return res.status(500).json({ success: false, message: "DATABASE_URL kosong!" });
   const sql = neon(databaseUrl);
 
-  // Inisialisasi Database + Otomatis Migrasi jika kolom max_devices belum ada
-  try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS scripts (
-        id VARCHAR(64) PRIMARY KEY,
-        name TEXT NOT NULL,
-        lua_code TEXT NOT NULL,
-        expires_at BIGINT NOT NULL,
-        created_at BIGINT NOT NULL,
-        max_devices INT DEFAULT 1,
-        devices TEXT DEFAULT '[]'
-      );
-    `;
-    try { await sql`ALTER TABLE scripts ADD COLUMN max_devices INT DEFAULT 1;`; } catch (e) {}
-    try { await sql`ALTER TABLE scripts ADD COLUMN devices TEXT DEFAULT '[]';`; } catch (e) {}
-  } catch (err) { console.error("DB Init Error:", err); }
-
   let body = req.body || {};
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch (e) {}
-  }
-
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // -------------------------------------------------------------
-  // URL 1: INIT LOADER (Generasi Script Login & File HWID binding)
-  // -------------------------------------------------------------
+  // URL 1: INIT - Mengirim UI Prompt Ter-Obfuscate
   if (action === 'init') {
+    // URL disamarkan dan prompt dibungkus pcall agar anti-dumping sederhana
     const loginUI = `
-local url = "https://" .. "nexus-mods-dev.vercel.app/api/connect"
-local hwid_path = "/sdcard/.nexus_device_id"
+local _ENV = _ENV or getfenv()
+local url = _ENV["string"]["char"](104,116,116,112,115,58,47,47) .. "nexus-mods-dev.vercel.app/api/connect"
+local hw_path = "/sdcard/.nxs_sys"
 
--- Fungsi mengambil atau membuat Device ID (Mendukung Non-Root/Root)
-local function getHWID()
-  local f = io.open(hwid_path, "r")
-  if f then
-    local id = f:read("*a")
-    f:close()
-    return id
-  else
-    local new_id = string.format("%08x-%04x", math.random(1, 0xffffffff), math.random(1, 0xffff))
-    f = io.open(hwid_path, "w")
-    if f then f:write(new_id) f:close() end
-    return new_id
+local function getID()
+  local f = io.open(hw_path, "r")
+  if f then local id = f:read("*a") f:close() return id else
+    local n = string.format("%08x", math.random(1, 0xffffffff))
+    f = io.open(hw_path, "w") if f then f:write(n) f:close() end return n
   end
 end
 
-local user_hwid = getHWID()
-local prompt = gg.prompt({"[ Nexus Mods ] Masukkan Key Login:"}, {""}, {"text"})
+local hw = getID()
+local p = gg.prompt({"[ Nexus Protection ]\\nInput License Key:"}, {""}, {"text"})
+if not p or p[1] == "" then os.exit() end
 
-if not prompt or prompt[1] == "" then 
-  gg.alert("❌ Login dibatalkan atau Key kosong!") 
-  os.exit() 
+gg.toast("Validating Environment...")
+local pl = '{"action":"validate_key", "key":"' .. p[1] .. '", "device_id":"' .. hw .. '"}'
+local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
+
+if r and r.content then 
+  local f, e = load(r.content)
+  if f then f() else gg.alert("Security Triggered: Invalid Script Format") end
+else 
+  gg.alert("Server Offline") 
 end
-
-gg.toast("⏳ Memeriksa Key & Device ID...")
-local payload = '{"action":"validate_key", "key":"' .. prompt[1] .. '", "device_id":"' .. user_hwid .. '"}'
-local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, payload)
-
-if not r or not r.content then
-  gg.alert("❌ Server Offline atau Terblokir!")
-  os.exit()
-end
-
-local func = load(r.content)
-if func then func() else gg.alert("❌ Error mengeksekusi script dari server!") end
     `;
     return res.status(200).send(loginUI);
   }
 
-  // -------------------------------------------------------------
-  // URL 2: VALIDASI KEY + HWID BINDING POST
-  // -------------------------------------------------------------
+  // URL 2: VALIDATE KEY & HWID
   if (action === 'validate_key') {
-    if (!targetKey) return res.status(200).send("gg.alert('❌ Key tidak valid!') os.exit()");
+    if (!targetKey) return res.status(200).send("gg.alert('Key Invalid') os.exit()");
 
     try {
       const rows = await sql`SELECT * FROM scripts WHERE id = ${targetKey}`;
-      if (rows.length === 0) return res.status(200).send("gg.alert('❌ Key Not Found / Invalid!') os.exit()");
+      if (rows.length === 0) return res.status(200).send("gg.alert('License Not Found') os.exit()");
 
       const item = rows[0];
-      if (Date.now() > Number(item.expires_at)) return res.status(200).send("gg.alert('⛔ Key ini sudah EXPIRED!') os.exit()");
+      if (Date.now() > Number(item.expires_at)) return res.status(200).send("gg.alert('License Expired') os.exit()");
 
-      // Logika HWID Limit Devices
       let currentDevices = [];
       try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
-      
-      const reqDeviceId = device_id || 'UNKNOWN';
+      const reqDev = device_id || 'UNKNOWN';
 
-      if (!currentDevices.includes(reqDeviceId)) {
+      if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
-          return res.status(200).send("gg.alert('⛔ Login Gagal! Key ini sudah mencapai batas limit " + item.max_devices + " device.') os.exit()");
+          return res.status(200).send("gg.alert('Max HWID Reached (" + item.max_devices + " devices)') os.exit()");
         }
-        currentDevices.push(reqDeviceId);
-        // Simpan device baru ke database
+        currentDevices.push(reqDev);
         await sql`UPDATE scripts SET devices = ${JSON.stringify(currentDevices)} WHERE id = ${targetKey}`;
       }
 
-      // Jika VALID
-      const successScript = `
-gg.toast("✅ Validasi Sukses!")
-${item.lua_code}
-      `;
-      return res.status(200).send(successScript);
+      // Berhasil
+      return res.status(200).send(`gg.toast("Access Granted")\n` + item.lua_code);
     } catch (e) {
-      return res.status(200).send("gg.alert('❌ Database Error Server!') os.exit()");
+      return res.status(200).send("gg.alert('Server Error') os.exit()");
     }
   }
 
-  // -------------------------------------------------------------
-  // API DASHBOARD (Create, List, Edit, Reset, Delete)
-  // -------------------------------------------------------------
+  // ADMIN CRUD OPERATIONS
   if (action === 'create') {
-    try {
-      const finalId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
-      const expiresAt = Date.now() + ((parseInt(expireDays) || 30) * 86400000);
-      const maxDev = parseInt(maxDevices) || 1;
-      
-      await sql`
-        INSERT INTO scripts (id, name, lua_code, expires_at, created_at, max_devices, devices)
-        VALUES (${finalId}, ${name || 'Untitled'}, ${luaCode}, ${expiresAt}, ${Date.now()}, ${maxDev}, '[]')
-        ON CONFLICT (id) DO UPDATE 
-        SET name = EXCLUDED.name, lua_code = EXCLUDED.lua_code, max_devices = EXCLUDED.max_devices;
-      `;
-      return res.status(200).json({ success: true, key: finalId });
-    } catch (e) { return res.status(500).json({ success: false, message: e.message }); }
+    const fId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
+    const exp = Date.now() + ((parseInt(expireDays) || 30) * 86400000);
+    await sql`INSERT INTO scripts (id, name, lua_code, expires_at, created_at, max_devices, devices) VALUES (${fId}, ${name}, ${luaCode}, ${exp}, ${Date.now()}, ${parseInt(maxDevices) || 1}, '[]') ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, lua_code=EXCLUDED.lua_code, max_devices=EXCLUDED.max_devices;`;
+    return res.status(200).json({ success: true });
   }
-
   if (action === 'list') {
-    try {
-      const rows = await sql`SELECT * FROM scripts ORDER BY created_at DESC`;
-      const scripts = rows.map(r => ({
-        key: r.id, name: r.name, expiresAt: Number(r.expires_at), maxDevices: r.max_devices, devices: r.devices
-      }));
-      return res.status(200).json({ success: true, scripts });
-    } catch (e) { return res.status(500).json({ success: false, message: e.message }); }
+    const rows = await sql`SELECT * FROM scripts ORDER BY created_at DESC`;
+    const scripts = rows.map(r => ({ key: r.id, name: r.name, expiresAt: Number(r.expires_at), maxDevices: r.max_devices, devices: r.devices }));
+    return res.status(200).json({ success: true, scripts });
   }
-
   if (action === 'edit') {
-    try {
-      await sql`UPDATE scripts SET name = ${name}, max_devices = ${parseInt(maxDevices) || 1} WHERE id = ${targetKey}`;
-      return res.status(200).json({ success: true });
-    } catch (e) { return res.status(500).json({ success: false, message: e.message }); }
+    await sql`UPDATE scripts SET name=${name}, max_devices=${parseInt(maxDevices) || 1} WHERE id=${targetKey}`;
+    return res.status(200).json({ success: true });
   }
-
   if (action === 'reset_hwid') {
-    try {
-      await sql`UPDATE scripts SET devices = '[]' WHERE id = ${targetKey}`;
-      return res.status(200).json({ success: true });
-    } catch (e) { return res.status(500).json({ success: false, message: e.message }); }
+    await sql`UPDATE scripts SET devices='[]' WHERE id=${targetKey}`;
+    return res.status(200).json({ success: true });
   }
-
   if (action === 'delete') {
-    try {
-      await sql`DELETE FROM scripts WHERE id = ${targetKey}`;
-      return res.status(200).json({ success: true });
-    } catch (e) { return res.status(500).json({ success: false, message: e.message }); }
+    await sql`DELETE FROM scripts WHERE id=${targetKey}`;
+    return res.status(200).json({ success: true });
   }
 
-  return res.status(400).json({ success: false, message: "Action invalid" });
+  return res.status(400).json({ success: false });
 }
