@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
+  // INIT - SCRIPT LUA DENGAN AUTO-DETECT DEVICE SYSTEM (PERMANEN BERBASIS ANDROID SYSTEM ID)
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -27,15 +28,22 @@ export default async function handler(req, res) {
 
     const loginUI = `
 local url = "${dynamicUrl}"
-local hw_path = "/sdcard/.nxs_sys"
 local cfg_path = "/sdcard/.svkeynexus"
 
-local function getID()
-  local f = io.open(hw_path, "r")
-  if f then local id = f:read("*a") f:close() return id else
-    local n = string.format("%08x", math.random(1, 0xffffffff))
-    f = io.open(hw_path, "w") if f then f:write(n) f:close() end return n
+-- Auto-detect Hardware / System ID secara permanen (Tidak berubah meskipun file lokal dihapus)
+local function getSystemDeviceID()
+  local handle = io.popen("settings get secure android_id 2>/dev/null")
+  local id = handle and handle:read("*a") or ""
+  if handle then handle:close() end
+  id = id:gsub("%s+", "")
+  
+  if id == "" or id == "nil" or id == "null" then
+    local h2 = io.popen("getprop ro.product.model 2>/dev/null")
+    id = h2 and h2:read("*a") or "NEXUS_DEVICE"
+    if h2 then h2:close() end
+    id = id:gsub("%s+", "")
   end
+  return id
 end
 
 local function getSavedKey()
@@ -52,7 +60,7 @@ local function saveKey(k, save)
   end
 end
 
-local hw = getID()
+local hw = getSystemDeviceID()
 local saved_k = getSavedKey()
 
 while true do
@@ -76,7 +84,7 @@ while true do
       if user_key == "" then
         gg.alert("❌ Key tidak boleh kosong!")
       else
-        gg.toast("⏳ Validating Key & Devices...")
+        gg.toast("⏳ Validating Payload & Device...")
         local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
         local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
 
@@ -112,6 +120,7 @@ end
     return res.status(200).send(loginUI);
   }
 
+  // VALIDATE KEY & PAYLOAD VERIFICATION
   if (action === 'validate_key') {
     if (!targetKey) return res.status(200).send("Key Invalid");
     try {
@@ -125,6 +134,7 @@ end
       try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
       const reqDev = device_id || 'UNKNOWN';
 
+      // Verifikasi & Auto-Register Device berbasis System ID permanen
       if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
           return res.status(200).send("Max Devices Reached (" + item.max_devices + " devices)");
