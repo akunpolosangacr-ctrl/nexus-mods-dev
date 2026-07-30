@@ -32,86 +32,88 @@
       --accent-red: #EF4444;
       
       --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
       
-      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.12);
       
       --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
-    body { background-color: var(--bg-base); color: var(--text-main); line-height: 1.5; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg-base); color: var(--text-main); line-height: 1.45; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
     
-    .app-container { width: 100%; max-width: 900px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
+    .app-container { width: 100%; max-width: 850px; margin: 0 auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
 
-    /* Header */
-    .app-header { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border-light); }
-    .header-logo { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-blue), #8B5CF6); border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow); }
-    .header-logo i { color: #fff; width: 24px; height: 24px; }
-    .header-text h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .header-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-top: 2px; }
+    /* Header Compact */
+    .app-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--bg-surface-glass); backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .header-logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent-blue), #8B5CF6); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow); flex-shrink: 0; }
+    .header-logo i { color: #fff; width: 22px; height: 22px; }
+    .header-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2; }
+    .header-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-top: 1px; }
 
-    /* Glassmorphism Card */
-    .glass-card { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); transition: var(--transition); }
+    /* Compact Glassmorphism Card */
+    .glass-card { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: var(--transition); }
     .glass-card:hover { border-color: var(--border-focus); box-shadow: var(--shadow-glow); }
     
-    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .card-header i { color: var(--accent-blue); }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .card-header i { color: var(--accent-blue); width: 22px; height: 22px; }
     .card-header h2 { font-size: 18px; font-weight: 700; color: var(--text-main); }
 
     /* Typography */
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .desc-text { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; font-weight: 500; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .desc-text { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; font-weight: 500; }
 
-    /* Forms & Inputs */
-    .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+    /* Forms & Inputs Compact */
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 14px; }
     @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
     .input-full { grid-column: 1 / -1; }
     
-    input, textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border-focus); border-radius: var(--radius-md); padding: 14px 16px; color: var(--text-main); font-size: 14px; font-weight: 500; transition: var(--transition); outline: none; }
+    input, textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border-focus); border-radius: var(--radius-md); padding: 0 16px; height: 48px; color: var(--text-main); font-size: 15px; font-weight: 500; transition: var(--transition); outline: none; }
     input::placeholder, textarea::placeholder { color: #475569; }
-    input:focus, textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); background: #151E2E; }
-    textarea { height: 130px; resize: vertical; font-family: 'Courier New', Courier, monospace; line-height: 1.6; }
+    input:focus, textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); background: #151E2E; }
+    
+    textarea { height: 140px; padding: 14px 16px; resize: vertical; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
 
-    /* Select Lua File Section */
-    .file-upload-box { display: flex; flex-direction: column; gap: 12px; }
-    .file-dropzone { border: 2px dashed var(--border-focus); border-radius: var(--radius-md); padding: 20px; text-align: center; background: var(--bg-base); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 12px; }
+    /* Select Lua File Compact */
+    .file-upload-box { display: flex; flex-direction: column; gap: 8px; }
+    .file-dropzone { border: 2px dashed var(--border-focus); border-radius: var(--radius-md); padding: 12px 16px; text-align: center; background: var(--bg-base); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; height: 46px; }
     .file-dropzone:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.05); }
-    .file-info-panel { display: none; background: var(--bg-base); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 12px 16px; align-items: center; justify-content: space-between; font-size: 13px; animation: fadeInUp 0.3s ease; }
-    .file-info-left { display: flex; align-items: center; gap: 10px; color: var(--text-main); font-weight: 600; }
-    .file-status-badge { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    
+    .file-info-chip { display: none; align-items: center; gap: 8px; background: var(--bg-base); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; width: fit-content; font-size: 12px; font-weight: 600; color: var(--text-main); animation: fadeInUp 0.3s ease; margin-top: 4px; }
+    .file-status-dot { width: 8px; height: 8px; background-color: var(--accent-emerald); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent-emerald); }
 
-    /* Premium Buttons */
-    .btn { width: 100%; border: none; padding: 14px 20px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; transition: var(--transition); position: relative; overflow: hidden; }
+    /* Buttons Compact */
+    .btn { width: 100%; border: none; height: 48px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; transition: var(--transition); position: relative; overflow: hidden; }
+    .btn-deploy { height: 52px; font-size: 17px; border-radius: 16px; }
     .btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: 0.5s; }
     .btn:hover::after { left: 100%; }
-    .btn:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5); }
+    .btn:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 6px 15px -5px rgba(0,0,0,0.4); }
     .btn:active { transform: translateY(0) scale(1); }
     
     .btn-emerald { background: linear-gradient(135deg, var(--accent-emerald), #059669); }
     .btn-blue { background: linear-gradient(135deg, var(--accent-blue), #2563EB); }
 
-    /* Database Card (Key Item) - Diperbarui sesuai permintaan */
-    .db-item { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 14px; transition: var(--transition); }
+    /* Database Card Compact */
+    .db-item { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; transition: var(--transition); }
     @media (min-width: 640px) { .db-item { flex-direction: row; justify-content: space-between; align-items: center; } }
-    .db-item:hover { border-color: var(--border-focus); transform: scale(1.01); background: #151E2E; box-shadow: var(--shadow-sm); }
+    .db-item:hover { border-color: var(--border-focus); transform: scale(1.005); background: #151E2E; box-shadow: var(--shadow-sm); }
     
-    .db-info { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-    .db-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .db-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .db-info { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow: hidden; }
+    .db-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .db-title { font-size: 15px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     
-    .badge-key { background: var(--accent-gold-bg); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px; }
+    .badge-key { background: var(--accent-gold-bg); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--accent-gold); padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px; }
     
-    .chip-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .chip { display: flex; align-items: center; gap: 5px; background: var(--bg-base); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .chip-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .chip { display: flex; align-items: center; gap: 4px; background: var(--bg-base); border: 1px solid var(--border-light); padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
     
-    /* Action Buttons (Strictly 40x40px, Radius 12px, Icon 20px, Gap 10px) */
-    .db-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
-    .btn-icon { width: 40px; height: 40px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: var(--transition); }
-    .btn-icon svg, .btn-icon i { width: 20px !important; height: 20px !important; }
-    .btn-icon:hover { transform: scale(1.08); filter: brightness(1.15); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    /* Action Buttons (Strictly 42x42px, Icon 18px, Gap 8px) */
+    .db-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
+    .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: var(--transition); }
+    .btn-icon svg, .btn-icon i { width: 18px !important; height: 18px !important; }
+    .btn-icon:hover { transform: scale(1.08); filter: brightness(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .btn-icon:active { transform: scale(0.95); }
     
     .icon-yellow { background: var(--accent-gold); }
@@ -120,17 +122,17 @@
     .icon-red { background: var(--accent-red); }
 
     /* Animations */
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in-up { animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-    @keyframes bounceSmall { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-    .bounce-anim { animation: bounceSmall 0.3s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    @keyframes bounceSmall { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    .bounce-anim { animation: bounceSmall 0.25s ease; }
 
     /* SweetAlert2 VIP Custom Overrides */
-    .swal2-popup.vip-modal { background: var(--bg-surface) !important; border: 1px solid var(--border-focus) !important; border-radius: var(--radius-lg) !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5) !important; padding: 28px 20px !important; }
-    .swal2-title.vip-title { color: var(--text-main) !important; font-size: 20px !important; font-weight: 800 !important; margin-bottom: 20px !important; }
-    .swal2-actions { gap: 10px !important; }
-    .swal2-confirm.vip-btn-confirm { background: linear-gradient(135deg, var(--accent-blue), #2563EB) !important; border-radius: var(--radius-sm) !important; padding: 12px 24px !important; font-weight: 700 !important; }
-    .swal2-cancel.vip-btn-cancel { background: var(--border-focus) !important; color: var(--text-main) !important; border-radius: var(--radius-sm) !important; padding: 12px 24px !important; font-weight: 700 !important; }
+    .swal2-popup.vip-modal { background: var(--bg-surface) !important; border: 1px solid var(--border-focus) !important; border-radius: var(--radius-lg) !important; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5) !important; padding: 24px 18px !important; }
+    .swal2-title.vip-title { color: var(--text-main) !important; font-size: 18px !important; font-weight: 800 !important; margin-bottom: 16px !important; }
+    .swal2-actions { gap: 8px !important; }
+    .swal2-confirm.vip-btn-confirm { background: linear-gradient(135deg, var(--accent-blue), #2563EB) !important; border-radius: var(--radius-sm) !important; padding: 10px 20px !important; font-weight: 700 !important; font-size: 14px !important; }
+    .swal2-cancel.vip-btn-cancel { background: var(--border-focus) !important; color: var(--text-main) !important; border-radius: var(--radius-sm) !important; padding: 10px 20px !important; font-weight: 700 !important; font-size: 14px !important; }
   </style>
 </head>
 <body>
@@ -148,41 +150,37 @@
       </div>
     </header>
 
-    <!-- 1. SELECT LUA SCRIPT (Card Baru di Atas) -->
+    <!-- 1. SELECT LUA SCRIPT (Compact) -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.05s;">
       <div class="card-header">
         <i data-lucide="folder"></i>
         <h2>Select Lua Script</h2>
       </div>
-      <p class="desc-text">Pilih file berformat .lua untuk mengisi source code utama secara otomatis tanpa perlu salin-tempel manual.</p>
+      <p class="desc-text">Pilih file berformat .lua untuk mengisi source code utama secara otomatis.</p>
       
       <div class="file-upload-box">
         <div class="file-dropzone" onclick="document.getElementById('luaFileInput').click()">
-          <i data-lucide="folder-open" style="width: 22px; height: 22px; color: var(--accent-blue);"></i>
-          <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">Pilih File .lua</span>
+          <i data-lucide="folder-open" style="width: 18px; height: 18px; color: var(--accent-blue);"></i>
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-main);">Pilih File .lua</span>
           <input type="file" id="luaFileInput" accept=".lua" style="display: none;" onchange="handleLuaFileSelect(event)">
         </div>
 
-        <div id="fileInfoPanel" class="file-info-panel">
-          <div class="file-info-left">
-            <i data-lucide="file-code" style="width: 18px; height: 18px; color: var(--accent-emerald);"></i>
-            <div>
-              <span id="fileNameDisplay" style="display: block;">script.lua</span>
-              <span id="fileSizeDisplay" style="font-size: 11px; color: var(--text-muted); font-weight: 400;">0 KB</span>
-            </div>
-          </div>
-          <span class="file-status-badge">Ready</span>
+        <div id="fileInfoChip" class="file-info-chip">
+          <span class="file-status-dot"></span>
+          <span id="fileNameDisplay" style="font-weight: 700; color: var(--text-main);">script.lua</span>
+          <span id="fileSizeDisplay" style="color: var(--text-muted); font-size: 11px;">(0 KB)</span>
+          <span style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 4px;">Ready</span>
         </div>
       </div>
     </section>
 
-    <!-- Universal Loader -->
+    <!-- Universal Loader (Compact) -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.1s;">
       <div class="card-header">
         <i data-lucide="terminal"></i>
         <h2>Universal Script Loader</h2>
       </div>
-      <p class="desc-text">Algoritma Array Byte terenkripsi mutlak. Melindungi URL server dan logika sistem dari aktivitas decompile (Anti-String).</p>
+      <p class="desc-text">Algoritma Array Byte terenkripsi mutlak (Anti-String Decompile).</p>
       <div class="form-grid">
         <div class="input-full">
           <label>API Endpoint Target</label>
@@ -222,8 +220,8 @@
           <textarea id="luaCode" placeholder="gg.alert('System Injected Successfully!')"></textarea>
         </div>
       </div>
-      <button class="btn btn-blue" onclick="createScript()">
-        <i data-lucide="server-cog" style="width: 18px; height: 18px;"></i> Deploy Script
+      <button class="btn btn-blue btn-deploy" onclick="createScript()">
+        <i data-lucide="server-cog" style="width: 20px; height: 20px;"></i> Deploy Script
       </button>
     </section>
 
@@ -234,9 +232,9 @@
         <h2>Manajemen Key Database</h2>
       </div>
       <div id="scriptList">
-        <div style="text-align: center; padding: 40px 0; color: var(--text-muted);">
-          <i data-lucide="loader-2" class="lucide-spin" style="width: 32px; height: 32px; margin-bottom: 12px; color: var(--accent-blue);"></i>
-          <p style="font-weight: 600; font-size: 14px;">Sinkronisasi Data Server...</p>
+        <div style="text-align: center; padding: 30px 0; color: var(--text-muted);">
+          <i data-lucide="loader-2" class="lucide-spin" style="width: 28px; height: 28px; margin-bottom: 8px; color: var(--accent-blue);"></i>
+          <p style="font-weight: 600; font-size: 13px;">Sinkronisasi Data Server...</p>
         </div>
       </div>
     </section>
@@ -257,12 +255,11 @@
       customClass: { popup: 'vip-modal' }
     });
 
-    // 1 & 2. AUTO LOAD FILE LUA & VALIDASI EKSTENSI
+    // 1 & 2. AUTO LOAD FILE LUA & TAMPILKAN DALAM CHIP KECIL
     function handleLuaFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Validasi ekstensi .lua
       if (!file.name.toLowerCase().endsWith('.lua')) {
         showToast('error', 'File harus berekstensi .lua');
         event.target.value = '';
@@ -271,19 +268,17 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        // Masukkan isi file ke textarea utama secara otomatis
         document.getElementById('luaCode').value = e.target.result;
         
-        // Tampilkan info file
         document.getElementById('fileNameDisplay').textContent = file.name;
         const sizeInKB = (file.size / 1024).toFixed(1);
-        document.getElementById('fileSizeDisplay').textContent = sizeInKB + ' KB';
+        document.getElementById('fileSizeDisplay').textContent = `(${sizeInKB} KB)`;
         
-        const panel = document.getElementById('fileInfoPanel');
-        panel.style.display = 'flex';
-        panel.classList.remove('fade-in-up');
-        void panel.offsetWidth; // Trigger reflow untuk animasi
-        panel.classList.add('fade-in-up');
+        const chip = document.getElementById('fileInfoChip');
+        chip.style.display = 'inline-flex';
+        chip.classList.remove('fade-in-up');
+        void chip.offsetWidth;
+        chip.classList.add('fade-in-up');
 
         showToast('success', 'File .lua berhasil dimuat!');
       };
@@ -296,7 +291,7 @@
         showToast('success', 'Key berhasil disalin');
         if (btnElement) {
           btnElement.classList.add('bounce-anim');
-          setTimeout(() => btnElement.classList.remove('bounce-anim'), 300);
+          setTimeout(() => btnElement.classList.remove('bounce-anim'), 250);
         }
       }).catch(() => {
         showToast('error', 'Gagal menyalin key');
@@ -322,12 +317,12 @@
         const data = await res.json();
         
         if (!data.success || !data.scripts.length) { 
-          container.innerHTML = '<div style="text-align:center; padding: 40px 0; color:#94A3B8; font-weight:600; font-size:14px;"><i data-lucide="folder-search" style="width:48px;height:48px;margin-bottom:12px;opacity:0.5;"></i><br>Database Kosong. Belum ada key terdaftar.</div>'; 
+          container.innerHTML = '<div style="text-align:center; padding: 30px 0; color:#94A3B8; font-weight:600; font-size:13px;"><i data-lucide="folder-search" style="width:40px;height:40px;margin-bottom:8px;opacity:0.5;"></i><br>Database Kosong. Belum ada key terdaftar.</div>'; 
           lucide.createIcons();
           return; 
         }
 
-        // Mapping Data ke UI Card Database Sesuai Urutan Tombol: Refresh, Copy, Edit, Delete
+        // Mapping Data ke UI Card Database Kompak (Chip Exp & HWID Sejajar)
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
           const devCount = s.devices ? JSON.parse(s.devices).length : 0;
@@ -339,8 +334,8 @@
                   <span class="badge-key">${s.key}</span>
                 </div>
                 <div class="chip-group">
-                  <span class="chip"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Exp: ${exp}</span>
-                  <span class="chip"><i data-lucide="smartphone" style="width:14px;height:14px;"></i> HWID: ${devCount} / ${s.maxDevices}</span>
+                  <span class="chip"><i data-lucide="calendar" style="width:13px;height:13px;"></i> Exp: ${exp}</span>
+                  <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> HWID: ${devCount} / ${s.maxDevices}</span>
                 </div>
               </div>
               <div class="db-actions">
@@ -353,7 +348,7 @@
         }).join('');
         lucide.createIcons();
       } catch (e) { 
-        container.innerHTML = '<div style="text-align:center; padding: 40px 0; color:#EF4444; font-weight:600; font-size:14px;"><i data-lucide="wifi-off" style="width:48px;height:48px;margin-bottom:12px;"></i><br>Gagal Terhubung ke Database Server.</div>'; 
+        container.innerHTML = '<div style="text-align:center; padding: 30px 0; color:#EF4444; font-weight:600; font-size:13px;"><i data-lucide="wifi-off" style="width:40px;height:40px;margin-bottom:8px;"></i><br>Gagal Terhubung ke Database Server.</div>'; 
         lucide.createIcons();
       }
     }
@@ -374,8 +369,7 @@
         document.getElementById('scriptName').value = ''; 
         document.getElementById('customKey').value = ''; 
         document.getElementById('luaCode').value = '';
-        // Reset file state jika ada
-        document.getElementById('fileInfoPanel').style.display = 'none';
+        document.getElementById('fileInfoChip').style.display = 'none';
         document.getElementById('luaFileInput').value = '';
         loadScripts();
       } else {
@@ -388,13 +382,13 @@
       const { value: form } = await Swal.fire({
         title: 'Konfigurasi Mod',
         html: `
-          <div style="text-align:left; margin-bottom: 20px;">
-            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:8px; display:block;">Nama Mod</label>
-            <input id="swal-name" value="${oldName}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:12px; padding:16px; font-size:15px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
+          <div style="text-align:left; margin-bottom: 14px;">
+            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:6px; display:block;">Nama Mod</label>
+            <input id="swal-name" value="${oldName}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:10px; padding:0 14px; height:46px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
           </div>
           <div style="text-align:left;">
-            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:8px; display:block;">Batas Devices (HWID)</label>
-            <input id="swal-max" type="number" value="${oldMax}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:12px; padding:16px; font-size:15px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
+            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:6px; display:block;">Batas Devices (HWID)</label>
+            <input id="swal-max" type="number" value="${oldMax}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:10px; padding:0 14px; height:46px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
           </div>
         `,
         showCancelButton: true, 
