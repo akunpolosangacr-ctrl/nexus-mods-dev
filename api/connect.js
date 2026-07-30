@@ -7,7 +7,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Nexus-Shield');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
   if (req.method !== 'POST' || req.headers['x-nexus-shield'] !== 'Active') {
     return res.status(403).send('Forbidden.');
   }
@@ -21,9 +20,8 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // 1. INIT - Return GUI Login ke GameGuardian (Menangkap target Host otomatis)
+  // INIT - SCRIPT LUA MURNI (TANPA _ENV Yg Bikin Error GG)
   if (action === 'init') {
-    // Dynamic URL: Akan mengarah kembali ke host asal request (Vercel atau domain custom)
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
     const dynamicUrl = `${protocol}://${host}/api/connect`;
@@ -58,10 +56,9 @@ end
     return res.status(200).send(loginUI);
   }
 
-  // 2. VALIDATE KEY
+  // VALIDATE KEY
   if (action === 'validate_key') {
     if (!targetKey) return res.status(200).send("gg.alert('Key Invalid') os.exit()");
-
     try {
       const rows = await sql`SELECT * FROM scripts WHERE id = ${targetKey}`;
       if (rows.length === 0) return res.status(200).send("gg.alert('License Not Found') os.exit()");
@@ -86,7 +83,7 @@ end
     }
   }
 
-  // 3. ADMIN ACTIONS
+  // ADMIN ACTIONS
   if (action === 'create') {
     const fId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
     const exp = Date.now() + ((parseInt(expireDays) || 30) * 86400000);

@@ -16,16 +16,13 @@
     body { background-color: var(--bg-dark); color: var(--text); padding: 30px 20px; }
     .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
     
-    /* Header Area */
     .header { text-align: center; margin-bottom: 10px; border-bottom: 2px dashed var(--border); padding-bottom: 15px; }
     .header h1 { font-size: 32px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .header p { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
 
-    /* Card Containers */
     .card { background: var(--bg-card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     .card-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
 
-    /* Form Elements */
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group.full { grid-column: 1 / -1; }
@@ -33,15 +30,12 @@
     input, textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); outline: none; transition: 0.2s; font-size: 14px; }
     input:focus, textarea:focus { border-color: var(--primary); }
     textarea { height: 120px; resize: vertical; font-family: monospace; }
-    .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
 
-    /* Buttons */
     .btn { border: none; padding: 14px 20px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; width: 100%; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.9; }
     .btn-green { background: var(--btn-green); }
     .btn-blue { background: var(--btn-blue); color: #0f172a; font-weight: 700; }
     
-    /* Script / Key List */
     .script-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .script-info { display: flex; flex-direction: column; gap: 8px; }
     .script-info .title { color: var(--primary); font-size: 16px; font-weight: 700; }
@@ -56,24 +50,21 @@
     .bg-blue { background: #3b82f6; }
     .bg-red { background: var(--btn-red); }
 
-    /* Swal Dark */
     .swal2-popup { background: var(--bg-card) !important; color: var(--text) !important; border-radius: 16px !important; border: 1px solid var(--border) !important; }
     .swal2-title { color: var(--primary) !important; }
     .swal2-input { background: var(--bg-input) !important; border: 1px solid var(--border) !important; color: #fff !important; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <div class="header">
       <h1><i data-lucide="shield"></i> NEXUS MODS ADMIN</h1>
       <p>Advanced Encryption & Device Limit Dashboard</p>
     </div>
 
-    <!-- Universal Script Loader -->
     <div class="card">
       <div class="card-title"><i data-lucide="code"></i> Universal Script Loader</div>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Masukkan URL target API (Vercel / Hosting Sendiri). URL akan dienkripsi menjadi struktur Array Byte.</p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Masukkan URL target API. Loader ini menggunakan Array Byte murni yang 100% jalan di GameGuardian.</p>
       
       <div class="form-group full" style="margin-bottom: 15px;">
         <label>CUSTOM API URL</label>
@@ -83,7 +74,6 @@
       <button class="btn btn-green" onclick="generateAndCopyLoader()"><i data-lucide="copy"></i> Salin Encrypted Universal Loader</button>
     </div>
 
-    <!-- Deploy Mod -->
     <div class="card">
       <div class="card-title"><i data-lucide="key-round"></i> Deploy Mod / Script Baru</div>
       <div class="form-grid">
@@ -111,7 +101,6 @@
       <button class="btn btn-blue" onclick="createScript()"><i data-lucide="rocket"></i> Deploy Script ke Server</button>
     </div>
 
-    <!-- Database -->
     <div class="card">
       <div class="card-title"><i data-lucide="database"></i> Manajemen Database Key</div>
       <div id="scriptList">
@@ -121,46 +110,30 @@
   </div>
 
   <script>
-    // Konfigurasi API Endpoint untuk Dashboard Admin
     const ADMIN_API = '/api/connect';
     const SECURE_HEADER = { 'Content-Type': 'application/json', 'X-Nexus-Shield': 'Active' };
 
     lucide.createIcons();
+    const showToast = (icon, title) => Swal.fire({ toast: true, position: 'top-end', icon, title, showConfirmButton: false, timer: 3000, background: '#1e293b', color: '#fff' });
 
-    const showToast = (icon, title) => {
-      Swal.fire({ toast: true, position: 'top-end', icon, title, showConfirmButton: false, timer: 3000, background: '#1e293b', color: '#fff' });
-    };
-
-    // FUNGSI ENKRIPSI URL KE BYTE ARRAY LUA
+    // FUNGSI COPY BYTE ARRAY MURNI (ANTI ERROR GG)
     function generateAndCopyLoader() {
       const urlInput = document.getElementById('targetApiUrl').value.trim();
       if(!urlInput) return Swal.fire('Gagal', 'URL Target API tidak boleh kosong!', 'error');
 
-      // Convert String URL ke CharCode Array
       const charArray = urlInput.split('').map(c => c.charCodeAt(0)).join(',');
-
-      // Struktur Loader persis seperti request
-      const loaderCode = `local t = {${charArray}}
-local url = ""
-for i=1, #t do url = url .. string.char(t[i]) end
-local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, '{"action":"init"}')
-if r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server!") end`;
+      const loaderCode = `local t = {${charArray}}\nlocal url = ""\nfor i=1, #t do url = url .. string.char(t[i]) end\nlocal r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, '{"action":"init"}')\nif r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server!") end`;
       
       navigator.clipboard.writeText(loaderCode);
-      Swal.fire({ title: 'Tersalin!', text: 'Loader dengan konfigurasi Byte Array siap ditempel di script.', icon: 'success' });
+      Swal.fire({ title: 'Tersalin!', text: 'Loader Byte Array siap ditempel di script Lua kamu.', icon: 'success' });
     }
 
-    // LOAD DATA
     async function loadScripts() {
       const container = document.getElementById('scriptList');
       try {
         const res = await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'list' }) });
         const data = await res.json();
-
-        if (!data.success || !data.scripts.length) {
-          container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:14px;">Belum ada key/mod terdaftar.</p>';
-          return;
-        }
+        if (!data.success || !data.scripts.length) { container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:14px;">Belum ada key/mod terdaftar.</p>'; return; }
 
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
@@ -180,14 +153,12 @@ if r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server
                 <button class="btn-icon bg-blue" onclick="editScript('${s.key}', '${s.name}', ${s.maxDevices})" title="Edit Mod"><i data-lucide="edit" style="width:20px;"></i></button>
                 <button class="btn-icon bg-red" onclick="deleteScript('${s.key}')" title="Hapus"><i data-lucide="trash-2" style="width:20px;"></i></button>
               </div>
-            </div>
-          `;
+            </div>`;
         }).join('');
         lucide.createIcons();
       } catch (e) { container.innerHTML = '<p style="color:#ef4444; text-align:center;">Gagal koneksi ke Database.</p>'; }
     }
 
-    // CREATE MOD
     async function createScript() {
       const name = document.getElementById('scriptName').value || 'Untitled Mod';
       const customKey = document.getElementById('customKey').value;
@@ -195,21 +166,15 @@ if r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server
       const maxDevices = document.getElementById('maxDevices').value || 1;
       const luaCode = document.getElementById('luaCode').value;
 
-      const res = await fetch(ADMIN_API, {
-        method: 'POST', headers: SECURE_HEADER,
-        body: JSON.stringify({ action: 'create', name, customKey, expireDays, maxDevices, luaCode })
-      });
+      const res = await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'create', name, customKey, expireDays, maxDevices, luaCode }) });
       const data = await res.json();
       if (data.success) {
         showToast('success', 'Key Berhasil Dibuat!');
-        document.getElementById('scriptName').value = ''; 
-        document.getElementById('customKey').value = ''; 
-        document.getElementById('luaCode').value = '';
+        document.getElementById('scriptName').value = ''; document.getElementById('customKey').value = ''; document.getElementById('luaCode').value = '';
         loadScripts();
       } else Swal.fire('Error', data.message, 'error');
     }
 
-    // EDIT MOD
     async function editScript(key, oldName, oldMax) {
       const { value: form } = await Swal.fire({
         title: 'Edit Konfigurasi',
@@ -228,7 +193,6 @@ if r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server
       }
     }
 
-    // RESET HWID
     async function resetHWID(key) {
       const res = await Swal.fire({ title: 'Reset HWID?', text: "Semua device terdaftar akan dihapus", icon: 'warning', showCancelButton: true, confirmButtonColor: '#f59e0b', confirmButtonText: 'Ya, Reset' });
       if (res.isConfirmed) {
@@ -237,7 +201,6 @@ if r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server
       }
     }
 
-    // DELETE MOD
     async function deleteScript(key) {
       const res = await Swal.fire({ title: 'Hapus Mod?', icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' });
       if (res.isConfirmed) {
