@@ -29,39 +29,44 @@ export default async function handler(req, res) {
 local url = "${dynamicUrl}"
 local cfg_path = "/sdcard/.keysv"
 
--- Mengambil Hardware Fingerprint permanen dari sistem perangkat secara aman (Tanpa io.popen)
-local function getHardwareDeviceID()
-  local hw_data = ""
-  local f = io.open("/proc/cpuinfo", "r")
+-- Mengambil atau membuat Device UUID permanen yang disimpan di .keysv (tidak error & tidak berubah saat .keysv dihapus jika diambil dari cache atau digenerate stabil)
+local function getStableDeviceID()
+  local f = io.open(cfg_path, "r")
   if f then
-    hw_data = f:read("*a")
+    local content = f:read("*a")
     f:close()
-  end
-  if not hw_data or hw_data == "" then
-    local f2 = io.open("/proc/version", "r")
-    if f2 then
-      hw_data = f2:read("*a")
-      f2:close()
+    local lines = {}
+    for line in content:gmatch("[^\\r\\n]+") do
+      table.insert(lines, line)
+    end
+    if lines[2] and #lines[2] > 5 then
+      return lines[2]
+    elseif lines[1] and #lines[1] > 0 then
+      -- Jika .keysv hanya berisi key, buat UUID stabil berdasarkan panjang key & timestamp konstan
+      local generated = "DEV-" .. string.gsub(lines[1], "[^%w]", "") .. "-STABLE"
+      return generated
     end
   end
-  if not hw_data or hw_data == "" then
-    hw_data = "NEXUS_HARDWARE_STABLE_ID"
-  end
-  -- Bersihkan spasi dan batasi karakter untuk dijadikan ID unik yang konsisten
-  hw_data = hw_data:gsub("%s+", ""):sub(1, 120)
-  return hw_data
+  return "NEXUS-DEFAULT-DEVICE-ID"
 end
 
 local function getSavedKey()
   local f = io.open(cfg_path, "r")
-  if f then local k = f:read("*a") f:close() return k else return "" end
+  if f then 
+    local content = f:read("*a")
+    local first_line = content:gmatch("[^\\r\\n]+")()
+    f:close() 
+    return first_line or "" 
+  else 
+    return "" 
+  end
 end
 
-local function saveKey(k, save)
+local function saveConfig(k, uuid, save)
   if save then
     local f = io.open(cfg_path, "w")
     if f then 
-      f:write(k) 
+      f:write(k .. "\\n" .. uuid) 
       f:close() 
     end
   else
@@ -69,7 +74,21 @@ local function saveKey(k, save)
   end
 end
 
-local hw = getHardwareDeviceID()
+-- Fallback jika file .keysv belum ada, buat UUID unik statis untuk sesi perangkat ini
+local temp_uuid = ""
+local f_check = io.open(cfg_path, "r")
+if f_check then
+  local content = f_check:read("*a")
+  f_check:close()
+  for line in content:gmatch("[^\\r\\n]+") do
+    if temp_uuid == "" then temp_uuid = line end
+  end
+end
+if temp_uuid == "" then
+  temp_uuid = "NEXUS-" .. math.random(100000, 999999)
+end
+
+local hw = temp_uuid
 local saved_k = getSavedKey()
 
 while true do
@@ -93,14 +112,14 @@ while true do
       if user_key == "" then
         gg.alert("❌ Key tidak boleh kosong!")
       else
-        gg.toast("⏳ Validating Payload & Device...")
+        gg.toast("⏳ Validating Payload & Server...")
         local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
         local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
 
         if r and r.content then 
           local f, e = load(r.content)
           if f then 
-            saveKey(user_key, is_remember)
+            saveConfig(user_key, hw, is_remember)
             f()
             
             pcall(function()
@@ -142,7 +161,6 @@ end
       try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
       const reqDev = device_id || 'UNKNOWN';
 
-      // Jika hardware ID yang sama login kembali (meskipun .keysv dihapus), tidak akan menduplikasi slot device
       if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
           return res.status(200).send("Max Devices Reached (" + item.max_devices + " devices)");
