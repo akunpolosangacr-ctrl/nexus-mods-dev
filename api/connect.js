@@ -8,7 +8,6 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // STRICT SERVER PROTECTION
   if (req.method !== 'POST' || req.headers['x-nexus-shield'] !== 'Active') {
     return res.status(403).send('Forbidden.');
   }
@@ -22,12 +21,15 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // URL 1: INIT - Mengirim UI Prompt Ter-Obfuscate
+  // 1. INIT - Return GUI Login ke GameGuardian (Menangkap target Host otomatis)
   if (action === 'init') {
-    // URL disamarkan dan prompt dibungkus pcall agar anti-dumping sederhana
+    // Dynamic URL: Akan mengarah kembali ke host asal request (Vercel atau domain custom)
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host;
+    const dynamicUrl = `${protocol}://${host}/api/connect`;
+
     const loginUI = `
-local _ENV = _ENV or getfenv()
-local url = _ENV["string"]["char"](104,116,116,112,115,58,47,47) .. "nexus-mods-dev.vercel.app/api/connect"
+local url = "${dynamicUrl}"
 local hw_path = "/sdcard/.nxs_sys"
 
 local function getID()
@@ -56,7 +58,7 @@ end
     return res.status(200).send(loginUI);
   }
 
-  // URL 2: VALIDATE KEY & HWID
+  // 2. VALIDATE KEY
   if (action === 'validate_key') {
     if (!targetKey) return res.status(200).send("gg.alert('Key Invalid') os.exit()");
 
@@ -78,15 +80,13 @@ end
         currentDevices.push(reqDev);
         await sql`UPDATE scripts SET devices = ${JSON.stringify(currentDevices)} WHERE id = ${targetKey}`;
       }
-
-      // Berhasil
       return res.status(200).send(`gg.toast("Access Granted")\n` + item.lua_code);
     } catch (e) {
       return res.status(200).send("gg.alert('Server Error') os.exit()");
     }
   }
 
-  // ADMIN CRUD OPERATIONS
+  // 3. ADMIN ACTIONS
   if (action === 'create') {
     const fId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
     const exp = Date.now() + ((parseInt(expireDays) || 30) * 86400000);
