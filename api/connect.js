@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - Dynamic Domain untuk GameGuardian Prompt
+  // INIT - SCRIPT LUA DENGAN AUTO SAVE STORAGE (.svkeynexus), CHECKBOX REMEMBER ME, DAN TOMBOL CLOSE (X)
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     const loginUI = `
 local url = "${dynamicUrl}"
 local hw_path = "/sdcard/.nxs_sys"
+local cfg_path = "/sdcard/.svkeynexus"
 
 local function getID()
   local f = io.open(hw_path, "r")
@@ -38,19 +39,54 @@ local function getID()
   end
 end
 
+local function getSavedKey()
+  local f = io.open(cfg_path, "r")
+  if f then local k = f:read("*a") f:close() return k else return "" end
+end
+
+local function saveKey(k, save)
+  if save then
+    local f = io.open(cfg_path, "w")
+    if f then f:write(k) f:close() end
+  else
+    os.remove(cfg_path)
+  end
+end
+
 local hw = getID()
-local p = gg.prompt({"[ Nexus Protection ]\\nInput License Key:"}, {""}, {"text"})
-if not p or p[1] == "" then os.exit() end
+local saved_k = getSavedKey()
 
-gg.toast("Validating Environment...")
-local pl = '{"action":"validate_key", "key":"' .. p[1] .. '", "device_id":"' .. hw .. '"}'
-local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
+while true do
+  local p = gg.prompt({"[ Nexus Protection ]\\nInput License Key:", "Remember Key (Auto Login)"}, {saved_k, true}, {"text", "checkbox"})
+  
+  if not p then 
+    gg.alert("❌ Script dihentikan oleh pengguna.")
+    os.exit() 
+  end
 
-if r and r.content then 
-  local f, e = load(r.content)
-  if f then f() else gg.alert("Security Triggered: Invalid Script Format") end
-else 
-  gg.alert("Server Offline") 
+  local user_key = p[1]
+  local is_remember = p[2]
+
+  if user_key == "" then
+    gg.alert("❌ Key tidak boleh kosong!")
+  else
+    gg.toast("⏳ Validating Key & HWID...")
+    local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
+    local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
+
+    if r and r.content then 
+      local f, e = load(r.content)
+      if f then 
+        saveKey(user_key, is_remember)
+        f()
+        break
+      else 
+        gg.alert("❌ " .. r.content)
+      end
+    else 
+      gg.alert("❌ Gagal terhubung ke server!")
+    end
+  end
 end
     `;
     return res.status(200).send(loginUI);
@@ -58,13 +94,13 @@ end
 
   // VALIDATE KEY
   if (action === 'validate_key') {
-    if (!targetKey) return res.status(200).send("gg.alert('Key Invalid') os.exit()");
+    if (!targetKey) return res.status(200).send("Key Invalid");
     try {
       const rows = await sql`SELECT * FROM scripts WHERE id = ${targetKey}`;
-      if (rows.length === 0) return res.status(200).send("gg.alert('License Not Found') os.exit()");
+      if (rows.length === 0) return res.status(200).send("License Not Found");
 
       const item = rows[0];
-      if (Date.now() > Number(item.expires_at)) return res.status(200).send("gg.alert('License Expired') os.exit()");
+      if (Date.now() > Number(item.expires_at)) return res.status(200).send("License Expired");
 
       let currentDevices = [];
       try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
@@ -72,14 +108,14 @@ end
 
       if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
-          return res.status(200).send("gg.alert('Max HWID Reached (" + item.max_devices + " devices)') os.exit()");
+          return res.status(200).send("Max HWID Reached (" + item.max_devices + " devices)");
         }
         currentDevices.push(reqDev);
         await sql`UPDATE scripts SET devices = ${JSON.stringify(currentDevices)} WHERE id = ${targetKey}`;
       }
       return res.status(200).send(`gg.toast("Access Granted")\n` + item.lua_code);
     } catch (e) {
-      return res.status(200).send("gg.alert('Server Error') os.exit()");
+      return res.status(200).send("Server Error");
     }
   }
 
