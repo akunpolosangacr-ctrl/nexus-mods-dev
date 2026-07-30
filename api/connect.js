@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - SCRIPT LUA DENGAN AUTO SAVE STORAGE (.svkeynexus), CHECKBOX REMEMBER ME, DAN TOMBOL CLOSE (X)
+  // INIT - SCRIPT LUA DENGAN "enter key nexus", "Remember Key", "Exit", dan "gg.setVisible(false)" sleep loop anti-exit saat back
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -57,7 +57,7 @@ local hw = getID()
 local saved_k = getSavedKey()
 
 while true do
-  local p = gg.prompt({"[ Nexus Protection ]\\nInput License Key:", "Remember Key (Auto Login)"}, {saved_k, true}, {"text", "checkbox"})
+  local p = gg.prompt({"[ enter key nexus ]\\nInput License Key:", "Remember Key (Auto Login)", "Exit"}, {saved_k, true, false}, {"text", "checkbox", "checkbox"})
   
   if not p then 
     gg.alert("❌ Script dihentikan oleh pengguna.")
@@ -66,11 +66,17 @@ while true do
 
   local user_key = p[1]
   local is_remember = p[2]
+  local is_exit = p[3]
+
+  if is_exit then
+    gg.alert("❌ Script dihentikan.")
+    os.exit()
+  end
 
   if user_key == "" then
     gg.alert("❌ Key tidak boleh kosong!")
   else
-    gg.toast("⏳ Validating Key & HWID...")
+    gg.toast("⏳ Validating Key & Devices...")
     local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
     local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
 
@@ -79,6 +85,14 @@ while true do
       if f then 
         saveKey(user_key, is_remember)
         f()
+        
+        -- Mencegah menu ended saat ditekan back / hide UI menggunakan gg.setVisible(false) dan sleep loop
+        pcall(function()
+          gg.setVisible(false)
+          while true do
+            gg.sleep(1000)
+          end
+        end)
         break
       else 
         gg.alert("❌ " .. r.content)
@@ -92,7 +106,6 @@ end
     return res.status(200).send(loginUI);
   }
 
-  // VALIDATE KEY
   if (action === 'validate_key') {
     if (!targetKey) return res.status(200).send("Key Invalid");
     try {
@@ -108,7 +121,7 @@ end
 
       if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
-          return res.status(200).send("Max HWID Reached (" + item.max_devices + " devices)");
+          return res.status(200).send("Max Devices Reached (" + item.max_devices + " devices)");
         }
         currentDevices.push(reqDev);
         await sql`UPDATE scripts SET devices = ${JSON.stringify(currentDevices)} WHERE id = ${targetKey}`;
@@ -119,7 +132,6 @@ end
     }
   }
 
-  // ADMIN ACTIONS
   if (action === 'create') {
     const fId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
     const exp = Date.now() + ((parseInt(expireDays) || 30) * 86400000);
@@ -144,5 +156,5 @@ end
     return res.status(200).json({ success: true });
   }
 
-  return res.status(400).json({ success: false });
+    return res.status(400).json({ success: false });
 }

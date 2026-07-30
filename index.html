@@ -46,14 +46,12 @@
     
     .app-container { width: 100%; max-width: 850px; margin: 0 auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
 
-    /* Header Compact */
     .app-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--bg-surface-glass); backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
     .header-logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent-blue), #8B5CF6); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow); flex-shrink: 0; }
     .header-logo i { color: #fff; width: 22px; height: 22px; }
     .header-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2; }
     .header-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-top: 1px; }
 
-    /* Compact Glassmorphism Card */
     .glass-card { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: var(--transition); }
     .glass-card:hover { border-color: var(--border-focus); box-shadow: var(--shadow-glow); }
     
@@ -61,11 +59,9 @@
     .card-header i { color: var(--accent-blue); width: 22px; height: 22px; }
     .card-header h2 { font-size: 18px; font-weight: 700; color: var(--text-main); }
 
-    /* Typography */
     label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
     .desc-text { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; font-weight: 500; }
 
-    /* Forms & Inputs Compact */
     .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 14px; }
     @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
     .input-full { grid-column: 1 / -1; }
@@ -76,7 +72,6 @@
     
     textarea { height: 140px; padding: 14px 16px; resize: vertical; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
 
-    /* Select Lua File Compact */
     .file-upload-box { display: flex; flex-direction: column; gap: 8px; }
     .file-dropzone { border: 2px dashed var(--border-focus); border-radius: var(--radius-md); padding: 12px 16px; text-align: center; background: var(--bg-base); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; height: 46px; }
     .file-dropzone:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.05); }
@@ -84,7 +79,6 @@
     .file-info-chip { display: none; align-items: center; gap: 8px; background: var(--bg-base); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; width: fit-content; font-size: 12px; font-weight: 600; color: var(--text-main); animation: fadeInUp 0.3s ease; margin-top: 4px; }
     .file-status-dot { width: 8px; height: 8px; background-color: var(--accent-emerald); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent-emerald); }
 
-    /* Buttons Compact */
     .btn { width: 100%; border: none; height: 48px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; transition: var(--transition); position: relative; overflow: hidden; }
     .btn-deploy { height: 52px; font-size: 17px; border-radius: 16px; }
     .btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: 0.5s; }
@@ -95,7 +89,6 @@
     .btn-emerald { background: linear-gradient(135deg, var(--accent-emerald), #059669); }
     .btn-blue { background: linear-gradient(135deg, var(--accent-blue), #2563EB); }
 
-    /* Database Card Compact */
     .db-item { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; transition: var(--transition); }
     @media (min-width: 640px) { .db-item { flex-direction: row; justify-content: space-between; align-items: center; } }
     .db-item:hover { border-color: var(--border-focus); transform: scale(1.005); background: #151E2E; box-shadow: var(--shadow-sm); }
@@ -109,7 +102,6 @@
     .chip-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     .chip { display: flex; align-items: center; gap: 4px; background: var(--bg-base); border: 1px solid var(--border-light); padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
     
-    /* Action Buttons (Strictly 42x42px, Icon 18px, Gap 8px) */
     .db-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
     .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: var(--transition); }
     .btn-icon svg, .btn-icon i { width: 18px !important; height: 18px !important; }
@@ -121,13 +113,11 @@
     .icon-blue { background: var(--accent-blue); }
     .icon-red { background: var(--accent-red); }
 
-    /* Animations */
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     @keyframes bounceSmall { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
     .bounce-anim { animation: bounceSmall 0.25s ease; }
 
-    /* SweetAlert2 VIP Custom Overrides */
     .swal2-popup.vip-modal { background: var(--bg-surface) !important; border: 1px solid var(--border-focus) !important; border-radius: var(--radius-lg) !important; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5) !important; padding: 24px 18px !important; }
     .swal2-title.vip-title { color: var(--text-main) !important; font-size: 18px !important; font-weight: 800 !important; margin-bottom: 16px !important; }
     .swal2-actions { gap: 8px !important; }
@@ -139,7 +129,6 @@
 
   <main class="app-container">
     
-    <!-- Header -->
     <header class="app-header fade-in-up" style="animation-delay: 0s;">
       <div class="header-logo">
         <i data-lucide="shield-check"></i>
@@ -150,7 +139,6 @@
       </div>
     </header>
 
-    <!-- 1. SELECT LUA SCRIPT (Compact) -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.05s;">
       <div class="card-header">
         <i data-lucide="folder"></i>
@@ -174,7 +162,6 @@
       </div>
     </section>
 
-    <!-- Universal Loader (Compact) -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.1s;">
       <div class="card-header">
         <i data-lucide="terminal"></i>
@@ -192,7 +179,6 @@
       </button>
     </section>
 
-    <!-- Deploy Mod -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.15s;">
       <div class="card-header">
         <i data-lucide="rocket"></i>
@@ -208,7 +194,7 @@
           <input type="text" id="customKey" placeholder="NEXUS-XXX">
         </div>
         <div>
-          <label>Batas Device (HWID)</label>
+          <label>Batas Devices</label>
           <input type="number" id="maxDevices" value="1" min="1">
         </div>
         <div>
@@ -225,7 +211,6 @@
       </button>
     </section>
 
-    <!-- Database -->
     <section class="glass-card fade-in-up" style="animation-delay: 0.2s;">
       <div class="card-header">
         <i data-lucide="database"></i>
@@ -255,7 +240,6 @@
       customClass: { popup: 'vip-modal' }
     });
 
-    // 1 & 2. AUTO LOAD FILE LUA & TAMPILKAN DALAM CHIP KECIL
     function handleLuaFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -285,7 +269,6 @@
       reader.readAsText(file);
     }
 
-    // 3. COPY KEY SPESIFIK KE CLIPBOARD
     function copyKeyToClipboard(keyText, btnElement) {
       navigator.clipboard.writeText(keyText).then(() => {
         showToast('success', 'Key berhasil disalin');
@@ -298,7 +281,6 @@
       });
     }
 
-    // GENERATE & COPY LOADER
     function generateAndCopyLoader() {
       const targetApiUrl = window.location.origin + "/api/connect";
       const charArray = targetApiUrl.split('').map(c => c.charCodeAt(0)).join(',');
@@ -309,7 +291,6 @@
       showToast('success', 'Loader Berhasil Disalin!');
     }
 
-    // LOAD SCRIPT DARI DB
     async function loadScripts() {
       const container = document.getElementById('scriptList');
       try {
@@ -322,7 +303,6 @@
           return; 
         }
 
-        // Mapping Data ke UI Card Database Kompak (Chip Exp & HWID Sejajar)
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
           const devCount = s.devices ? JSON.parse(s.devices).length : 0;
@@ -335,11 +315,11 @@
                 </div>
                 <div class="chip-group">
                   <span class="chip"><i data-lucide="calendar" style="width:13px;height:13px;"></i> Exp: ${exp}</span>
-                  <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> HWID: ${devCount} / ${s.maxDevices}</span>
+                  <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> Devices: ${devCount} / ${s.maxDevices}</span>
                 </div>
               </div>
               <div class="db-actions">
-                <button class="btn-icon icon-yellow" onclick="resetHWID('${s.key}')" title="Reset HWID"><i data-lucide="refresh-cw"></i></button>
+                <button class="btn-icon icon-yellow" onclick="resetHWID('${s.key}')" title="Reset Devices"><i data-lucide="refresh-cw"></i></button>
                 <button class="btn-icon icon-blue-copy" onclick="copyKeyToClipboard('${s.key}', this)" title="Copy Key"><i data-lucide="copy"></i></button>
                 <button class="btn-icon icon-blue" onclick="editScript('${s.key}', '${s.name}', ${s.maxDevices})" title="Edit Mod"><i data-lucide="edit-2"></i></button>
                 <button class="btn-icon icon-red" onclick="deleteScript('${s.key}')" title="Hapus Data"><i data-lucide="trash-2"></i></button>
@@ -353,7 +333,6 @@
       }
     }
 
-    // CREATE NEW SCRIPT
     async function createScript() {
       const name = document.getElementById('scriptName').value || 'Untitled Mod';
       const customKey = document.getElementById('customKey').value;
@@ -377,7 +356,6 @@
       }
     }
 
-    // EDIT SCRIPT
     async function editScript(key, oldName, oldMax) {
       const { value: form } = await Swal.fire({
         title: 'Konfigurasi Mod',
@@ -387,7 +365,7 @@
             <input id="swal-name" value="${oldName}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:10px; padding:0 14px; height:46px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
           </div>
           <div style="text-align:left;">
-            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:6px; display:block;">Batas Devices (HWID)</label>
+            <label style="font-size:12px; font-weight:700; color:#94A3B8; margin-bottom:6px; display:block;">Batas Devices</label>
             <input id="swal-max" type="number" value="${oldMax}" style="width:100%; background:#111827; border:1px solid #334155; color:#F8FAFC; border-radius:10px; padding:0 14px; height:46px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#334155'">
           </div>
         `,
@@ -406,11 +384,10 @@
       }
     }
 
-    // RESET HWID
     async function resetHWID(key) {
       const res = await Swal.fire({ 
-        title: 'Format HWID?', 
-        text: "Seluruh data device user akan dihapus.", 
+        title: 'Format Devices?', 
+        text: "Seluruh data devices user akan dihapus.", 
         icon: 'warning', 
         showCancelButton: true, 
         confirmButtonText: 'Eksekusi Reset',
@@ -420,12 +397,11 @@
       });
       if (res.isConfirmed) {
         await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'reset_hwid', key }) });
-        showToast('success', 'Database HWID Dikosongkan!'); 
+        showToast('success', 'Database Devices Dikosongkan!'); 
         loadScripts();
       }
     }
 
-    // DELETE SCRIPT
     async function deleteScript(key) {
       const res = await Swal.fire({ 
         title: 'Hapus Mod Permanen?', 
