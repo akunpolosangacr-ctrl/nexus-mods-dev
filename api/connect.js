@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - SCRIPT LUA MURNI (TANPA _ENV Yg Bikin Error GG)
+  // INIT - Dynamic Domain untuk GameGuardian Prompt
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;

@@ -7,52 +7,77 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
     :root { 
-      --bg-dark: #0b1121; --bg-card: #1e293b; --bg-input: #0f172a;
-      --border: #334155; --primary: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8;
-      --btn-green: #10b981; --btn-blue: #38bdf8; --btn-yellow: #f59e0b; --btn-red: #ef4444;
+      --bg-dark: #0b1121; 
+      --bg-card: #1e293b; 
+      --bg-input: #0f172a;
+      --border: #334155; 
+      --primary: #38bdf8; 
+      --text: #f8fafc; 
+      --text-muted: #94a3b8;
+      --btn-green: #10b981; 
+      --btn-blue: #38bdf8; 
+      --btn-yellow: #f59e0b; 
+      --btn-red: #ef4444;
+      --btn-purple: #8b5cf6;
+      --btn-gray: #64748b;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text); padding: 30px 20px; }
     .container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
     
-    .header { text-align: center; margin-bottom: 10px; border-bottom: 2px dashed var(--border); padding-bottom: 15px; }
-    .header h1 { font-size: 32px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .header p { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
+    /* Header */
+    .header { text-align: center; margin-bottom: 5px; border-bottom: 2px dashed var(--border); padding-bottom: 20px; }
+    .header h1 { font-size: 32px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; text-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+    .header p { color: var(--text-muted); font-size: 14px; margin-top: 8px; font-weight: 400; }
 
-    .card { background: var(--bg-card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-    .card-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    /* Cards */
+    .card { background: var(--bg-card); border-radius: 16px; padding: 24px; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); transition: transform 0.3s ease; }
+    .card:hover { border-color: rgba(56, 189, 248, 0.2); }
+    .card-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; color: #fff; }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    /* Forms */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-group.full { grid-column: 1 / -1; }
-    label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    input, textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); outline: none; transition: 0.2s; font-size: 14px; }
-    input:focus, textarea:focus { border-color: var(--primary); }
-    textarea { height: 120px; resize: vertical; font-family: monospace; }
+    label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    input, textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--text); outline: none; transition: all 0.3s ease; font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+    textarea { height: 120px; resize: vertical; font-family: 'Courier New', monospace; line-height: 1.5; }
 
-    .btn { border: none; padding: 14px 20px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; width: 100%; transition: opacity 0.2s; }
-    .btn:hover { opacity: 0.9; }
-    .btn-green { background: var(--btn-green); }
-    .btn-blue { background: var(--btn-blue); color: #0f172a; font-weight: 700; }
+    /* Buttons */
+    .btn { border: none; padding: 16px 24px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; width: 100%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+    .btn:active { transform: translateY(0); }
+    .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-blue { background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #0f172a; }
     
-    .script-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    /* List Items */
+    .script-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+    .script-item:hover { transform: scale(1.01); border-color: #475569; }
     .script-info { display: flex; flex-direction: column; gap: 8px; }
-    .script-info .title { color: var(--primary); font-size: 16px; font-weight: 700; }
-    .script-info .key { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--btn-yellow); border: 1px solid rgba(245, 158, 11, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: bold; font-family: monospace; width: fit-content; }
+    .script-info .title { color: var(--primary); font-size: 18px; font-weight: 800; }
+    .script-info .key { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--btn-yellow); border: 1px solid rgba(245, 158, 11, 0.2); padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: monospace; width: fit-content; }
     .badges { display: flex; gap: 10px; margin-top: 4px; }
-    .badge { background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .badge { background: var(--bg-card); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
     
-    .action-btns { display: flex; gap: 8px; }
-    .btn-icon { width: 40px; height: 40px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.2s; }
-    .btn-icon:hover { opacity: 0.8; transform: scale(1.05); }
+    /* Action Buttons */
+    .action-btns { display: flex; gap: 10px; }
+    .btn-icon { width: 44px; height: 44px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-icon:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); filter: brightness(1.1); }
     .bg-yellow { background: var(--btn-yellow); }
     .bg-blue { background: #3b82f6; }
     .bg-red { background: var(--btn-red); }
 
-    .swal2-popup { background: var(--bg-card) !important; color: var(--text) !important; border-radius: 16px !important; border: 1px solid var(--border) !important; }
-    .swal2-title { color: var(--primary) !important; }
-    .swal2-input { background: var(--bg-input) !important; border: 1px solid var(--border) !important; color: #fff !important; }
+    /* Custom SweetAlert Dark Theme (Matches Screenshot) */
+    .swal2-popup.custom-swal-popup { background: var(--bg-card) !important; color: var(--text) !important; border-radius: 16px !important; border: 1px solid var(--border) !important; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important; }
+    .swal2-title.custom-swal-title { color: var(--primary) !important; font-size: 24px !important; font-weight: 700 !important; margin-bottom: 20px; }
+    .swal2-actions { gap: 10px !important; }
+    .swal2-confirm.custom-btn-simpan { background-color: var(--btn-purple) !important; border-radius: 8px !important; padding: 12px 24px !important; font-weight: 600 !important; }
+    .swal2-cancel.custom-btn-cancel { background-color: var(--btn-gray) !important; border-radius: 8px !important; padding: 12px 24px !important; font-weight: 600 !important; }
   </style>
 </head>
 <body>
@@ -62,18 +87,15 @@
       <p>Advanced Encryption & Device Limit Dashboard</p>
     </div>
 
+    <!-- Universal Loader -->
     <div class="card">
       <div class="card-title"><i data-lucide="code"></i> Universal Script Loader</div>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Masukkan URL target API. Loader ini menggunakan Array Byte murni yang 100% jalan di GameGuardian.</p>
-      
-      <div class="form-group full" style="margin-bottom: 15px;">
-        <label>CUSTOM API URL</label>
-        <input type="text" id="targetApiUrl" value="https://nexus-mods-dev.vercel.app/api/connect" placeholder="https://domain.com/api.php">
-      </div>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Loader ini menggunakan algoritma Array Byte. URL server, fungsi, dan string diretas strukturnya agar sulit di-decompile (Anti-String). Otomatis tersambung ke domain server ini.</p>
       
       <button class="btn btn-green" onclick="generateAndCopyLoader()"><i data-lucide="copy"></i> Salin Encrypted Universal Loader</button>
     </div>
 
+    <!-- Generate Key -->
     <div class="card">
       <div class="card-title"><i data-lucide="key-round"></i> Deploy Mod / Script Baru</div>
       <div class="form-grid">
@@ -101,10 +123,11 @@
       <button class="btn btn-blue" onclick="createScript()"><i data-lucide="rocket"></i> Deploy Script ke Server</button>
     </div>
 
+    <!-- Key Database -->
     <div class="card">
       <div class="card-title"><i data-lucide="database"></i> Manajemen Database Key</div>
       <div id="scriptList">
-        <p style="text-align: center; color: var(--text-muted); padding: 20px;"><i data-lucide="loader-2" class="lucide-spin"></i> Memuat Data...</p>
+        <p style="text-align: center; color: var(--text-muted); padding: 30px;"><i data-lucide="loader-2" class="lucide-spin" style="width: 30px; height: 30px;"></i><br><br>Memuat Data...</p>
       </div>
     </div>
   </div>
@@ -114,18 +137,25 @@
     const SECURE_HEADER = { 'Content-Type': 'application/json', 'X-Nexus-Shield': 'Active' };
 
     lucide.createIcons();
-    const showToast = (icon, title) => Swal.fire({ toast: true, position: 'top-end', icon, title, showConfirmButton: false, timer: 3000, background: '#1e293b', color: '#fff' });
+    
+    // Toast Notification Styling
+    const showToast = (icon, title) => Swal.fire({ 
+      toast: true, position: 'top-end', icon, title, 
+      showConfirmButton: false, timer: 3000, 
+      background: '#1e293b', color: '#f8fafc',
+      iconColor: icon === 'success' ? '#10b981' : '#ef4444'
+    });
 
-    // FUNGSI COPY BYTE ARRAY MURNI (ANTI ERROR GG)
+    // AUTO-DETECT URL & COPY BYTE ARRAY
     function generateAndCopyLoader() {
-      const urlInput = document.getElementById('targetApiUrl').value.trim();
-      if(!urlInput) return Swal.fire('Gagal', 'URL Target API tidak boleh kosong!', 'error');
-
-      const charArray = urlInput.split('').map(c => c.charCodeAt(0)).join(',');
+      // Otomatis mengambil domain web panel saat ini
+      const targetApiUrl = window.location.origin + "/api/connect";
+      const charArray = targetApiUrl.split('').map(c => c.charCodeAt(0)).join(',');
+      
       const loaderCode = `local t = {${charArray}}\nlocal url = ""\nfor i=1, #t do url = url .. string.char(t[i]) end\nlocal r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, '{"action":"init"}')\nif r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server!") end`;
       
       navigator.clipboard.writeText(loaderCode);
-      Swal.fire({ title: 'Tersalin!', text: 'Loader Byte Array siap ditempel di script Lua kamu.', icon: 'success' });
+      showToast('success', 'Loader Berhasil Disalin!');
     }
 
     async function loadScripts() {
@@ -133,7 +163,11 @@
       try {
         const res = await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'list' }) });
         const data = await res.json();
-        if (!data.success || !data.scripts.length) { container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:14px;">Belum ada key/mod terdaftar.</p>'; return; }
+        
+        if (!data.success || !data.scripts.length) { 
+          container.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:14px; padding: 20px;">Belum ada key/mod terdaftar.</p>'; 
+          return; 
+        }
 
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
@@ -156,7 +190,9 @@
             </div>`;
         }).join('');
         lucide.createIcons();
-      } catch (e) { container.innerHTML = '<p style="color:#ef4444; text-align:center;">Gagal koneksi ke Database.</p>'; }
+      } catch (e) { 
+        container.innerHTML = '<p style="color:#ef4444; text-align:center;">Gagal koneksi ke Database.</p>'; 
+      }
     }
 
     async function createScript() {
@@ -168,47 +204,96 @@
 
       const res = await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'create', name, customKey, expireDays, maxDevices, luaCode }) });
       const data = await res.json();
+      
       if (data.success) {
-        showToast('success', 'Key Berhasil Dibuat!');
-        document.getElementById('scriptName').value = ''; document.getElementById('customKey').value = ''; document.getElementById('luaCode').value = '';
+        showToast('success', 'Mod Berhasil Dideploy!');
+        document.getElementById('scriptName').value = ''; 
+        document.getElementById('customKey').value = ''; 
+        document.getElementById('luaCode').value = '';
         loadScripts();
-      } else Swal.fire('Error', data.message, 'error');
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: data.message, customClass: { popup: 'custom-swal-popup' }});
+      }
     }
 
+    // FIX SWEETALERT EDIT MODAL (Sama persis kayak screenshot)
     async function editScript(key, oldName, oldMax) {
       const { value: form } = await Swal.fire({
         title: 'Edit Konfigurasi',
         html: `
-          <div style="text-align:left; font-size:12px; font-weight:bold; color:#94a3b8; margin-bottom:5px;">NAMA MOD</div>
-          <input id="swal-name" class="swal2-input" value="${oldName}" style="width:90%; margin: 0 0 15px 0;">
-          <div style="text-align:left; font-size:12px; font-weight:bold; color:#94a3b8; margin-bottom:5px;">BATAS DEVICES (HWID)</div>
-          <input id="swal-max" type="number" class="swal2-input" value="${oldMax}" style="width:90%; margin: 0;">
+          <div style="text-align:left; margin-bottom: 20px;">
+            <label style="font-size:12px; font-weight:700; color:#94a3b8; display:block; margin-bottom:8px;">NAMA MOD</label>
+            <input id="swal-name" class="swal2-input" value="${oldName}" style="width:100%; margin:0; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:8px; padding:14px; font-size:15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+          </div>
+          <div style="text-align:left;">
+            <label style="font-size:12px; font-weight:700; color:#94a3b8; display:block; margin-bottom:8px;">BATAS DEVICES (HWID)</label>
+            <input id="swal-max" type="number" class="swal2-input" value="${oldMax}" style="width:100%; margin:0; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:8px; padding:14px; font-size:15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+          </div>
         `,
-        showCancelButton: true, confirmButtonText: 'Simpan',
+        showCancelButton: true, 
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Cancel',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          confirmButton: 'custom-btn-simpan swal2-confirm',
+          cancelButton: 'custom-btn-cancel swal2-cancel'
+        },
         preConfirm: () => ({ name: document.getElementById('swal-name').value, maxDevices: document.getElementById('swal-max').value })
       });
+      
       if (form) {
         await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'edit', key, name: form.name, maxDevices: form.maxDevices }) });
-        showToast('success', 'Tersimpan!'); loadScripts();
+        showToast('success', 'Konfigurasi Tersimpan!'); 
+        loadScripts();
       }
     }
 
     async function resetHWID(key) {
-      const res = await Swal.fire({ title: 'Reset HWID?', text: "Semua device terdaftar akan dihapus", icon: 'warning', showCancelButton: true, confirmButtonColor: '#f59e0b', confirmButtonText: 'Ya, Reset' });
+      const res = await Swal.fire({ 
+        title: 'Reset HWID?', 
+        text: "Semua device terdaftar akan dihapus.", 
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonText: 'Ya, Reset',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          confirmButton: 'custom-btn-simpan swal2-confirm',
+          cancelButton: 'custom-btn-cancel swal2-cancel'
+        }
+      });
       if (res.isConfirmed) {
         await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'reset_hwid', key }) });
-        showToast('success', 'HWID Direset!'); loadScripts();
+        showToast('success', 'HWID Berhasil Direset!'); 
+        loadScripts();
       }
     }
 
     async function deleteScript(key) {
-      const res = await Swal.fire({ title: 'Hapus Mod?', icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' });
+      const res = await Swal.fire({ 
+        title: 'Hapus Mod?', 
+        icon: 'error', 
+        showCancelButton: true, 
+        confirmButtonText: 'Ya, Hapus',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          confirmButton: 'custom-btn-simpan swal2-confirm',
+          cancelButton: 'custom-btn-cancel swal2-cancel'
+        }
+      });
       if (res.isConfirmed) {
         await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'delete', key }) });
-        showToast('success', 'Mod Terhapus!'); loadScripts();
+        showToast('success', 'Mod Terhapus!'); 
+        loadScripts();
       }
     }
 
+    // Initialize
     loadScripts();
   </script>
 </body>
