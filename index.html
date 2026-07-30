@@ -30,6 +30,7 @@
       --accent-gold: #F59E0B;
       --accent-gold-bg: rgba(245, 158, 11, 0.1);
       --accent-red: #EF4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.15);
       
       --radius-sm: 8px;
       --radius-md: 14px;
@@ -94,7 +95,6 @@
     
     textarea { height: 140px; padding: 14px 16px; resize: vertical; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
 
-    /* Expiry Presets Styling */
     .expiry-flex { display: flex; gap: 8px; }
     .expiry-flex input { flex: 2; }
     .expiry-flex select { flex: 1; background: var(--bg-input); border: 1px solid var(--border-focus); border-radius: var(--radius-md); color: var(--text-main); padding: 0 10px; height: 48px; font-weight: 600; outline: none; }
@@ -119,9 +119,11 @@
     .btn-emerald { background: linear-gradient(135deg, var(--accent-emerald), #059669); }
     .btn-blue { background: linear-gradient(135deg, var(--accent-blue), #2563EB); }
 
+    /* Database Items Styling */
     .db-item { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; transition: var(--transition); }
+    .db-item.expired-card { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.03); }
     @media (min-width: 640px) { .db-item { flex-direction: row; justify-content: space-between; align-items: center; } }
-    .db-item:hover { border-color: var(--border-focus); transform: scale(1.005); background: #151E2E; box-shadow: var(--shadow-sm); }
+    .db-item:hover { border-color: var(--border-focus); transform: scale(1.005); box-shadow: var(--shadow-sm); }
     
     .db-info { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow: hidden; }
     .db-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -131,6 +133,10 @@
     
     .chip-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     .chip { display: flex; align-items: center; gap: 4px; background: var(--bg-base); border: 1px solid var(--border-light); padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    
+    /* Dynamic Expired & Timer Chips */
+    .chip-expired { background: var(--accent-red-bg) !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; color: var(--accent-red) !important; font-weight: 700 !important; }
+    .chip-live-countdown { background: rgba(59, 130, 246, 0.1) !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; color: #60A5FA !important; font-weight: 700 !important; font-family: monospace; }
     
     .db-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
     .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: var(--transition); }
@@ -174,6 +180,7 @@
         <h4><i data-lucide="terminal" style="width:14px;height:14px;color:var(--accent-emerald);"></i> Server Logs</h4>
         <div class="tracking-log-item">[INFO] Security Shield: Active</div>
         <div class="tracking-log-item">[INFO] Storage: .keysv Ready</div>
+        <div class="tracking-log-item">[INFO] Ticking Engine: 1000ms</div>
       </div>
     </div>
     <div class="drawer-footer">
@@ -369,6 +376,59 @@
       showToast('success', 'Loader Berhasil Disalin!');
     }
 
+    // REALTIME COUNTDOWN TICKER SYSTEM (Setiap 1000ms / 1 Detik)
+    function updateRealtimeTimers() {
+      const now = Date.now();
+      const items = document.querySelectorAll('.db-item[data-expires]');
+
+      items.forEach(item => {
+        const expiresAt = Number(item.getAttribute('data-expires'));
+        const expChip = item.querySelector('.exp-chip');
+        const countdownChip = item.querySelector('.countdown-chip');
+        const diff = expiresAt - now;
+
+        if (diff <= 0) {
+          // EXPIRED -> Warna Merah Tegas
+          item.classList.add('expired-card');
+          if (expChip) {
+            expChip.className = 'chip chip-expired';
+            expChip.innerHTML = '<i data-lucide="x-circle" style="width:13px;height:13px;color:#EF4444;"></i> Status: EXPIRED';
+          }
+          if (countdownChip) {
+            countdownChip.style.display = 'none';
+          }
+        } else {
+          // AKTIF -> Hitung mundur menit & detik secara presisi
+          item.classList.remove('expired-card');
+          
+          const totalSecs = Math.floor(diff / 1000);
+          const days = Math.floor(totalSecs / 86400);
+          const hours = Math.floor((totalSecs % 86400) / 3600);
+          const mins = Math.floor((totalSecs % 3600) / 60);
+          const secs = totalSecs % 60;
+
+          let cdStr = '';
+          if (days > 0) {
+            cdStr = `${days}d ${hours}h ${mins}m`;
+          } else if (hours > 0) {
+            cdStr = `${hours}h ${mins}m ${secs.toString().padStart(2, '0')}s`;
+          } else {
+            cdStr = `${mins}m ${secs.toString().padStart(2, '0')}s`;
+          }
+
+          if (countdownChip) {
+            countdownChip.style.display = 'inline-flex';
+            countdownChip.className = 'chip chip-live-countdown';
+            countdownChip.innerHTML = `<i data-lucide="clock" style="width:13px;height:13px;color:#60A5FA;"></i> Sisa: ${cdStr}`;
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Jalankan Interval Detik
+    setInterval(updateRealtimeTimers, 1000);
+
     async function loadScripts() {
       const container = document.getElementById('scriptList');
       try {
@@ -384,18 +444,29 @@
 
         let totalDevices = 0;
         container.innerHTML = data.scripts.map(s => {
-          const exp = new Date(s.expiresAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const expDate = new Date(s.expiresAt);
+          // Format Lengkap Jam, Menit, dan Detik: DD/MM/YYYY HH:MM:SS
+          const formattedExp = expDate.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + expDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          
           const devList = s.devices ? JSON.parse(s.devices) : [];
           totalDevices += devList.length;
+          const isExpired = Date.now() > s.expiresAt;
+
           return `
-            <article class="db-item fade-in-up">
+            <article class="db-item fade-in-up ${isExpired ? 'expired-card' : ''}" data-expires="${s.expiresAt}">
               <div class="db-info">
                 <div class="db-title-row">
                   <h3 class="db-title">${s.name}</h3>
                   <span class="badge-key">${s.key}</span>
                 </div>
                 <div class="chip-group">
-                  <span class="chip"><i data-lucide="calendar" style="width:13px;height:13px;"></i> Exp: ${exp}</span>
+                  <span class="chip exp-chip ${isExpired ? 'chip-expired' : ''}">
+                    <i data-lucide="${isExpired ? 'x-circle' : 'calendar'}" style="width:13px;height:13px;"></i> 
+                    ${isExpired ? 'Status: EXPIRED' : 'Exp: ' + formattedExp}
+                  </span>
+                  <span class="chip countdown-chip chip-live-countdown" style="${isExpired ? 'display:none;' : ''}">
+                    <i data-lucide="clock" style="width:13px;height:13px;"></i> Sisa: Calculating...
+                  </span>
                   <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> Devices: ${devList.length} / ${s.maxDevices}</span>
                 </div>
               </div>
@@ -409,7 +480,7 @@
         }).join('');
         
         document.getElementById('deviceCountLog').textContent = `Total Tracked Devices: ${totalDevices}`;
-        lucide.createIcons();
+        updateRealtimeTimers();
       } catch (e) { 
         container.innerHTML = '<div style="text-align:center; padding: 30px 0; color:#EF4444; font-weight:600; font-size:13px;"><i data-lucide="wifi-off" style="width:40px;height:40px;margin-bottom:8px;"></i><br>Gagal Terhubung ke Database Server.</div>'; 
         lucide.createIcons();
