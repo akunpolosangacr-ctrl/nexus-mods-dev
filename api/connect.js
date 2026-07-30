@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
+  // Setup CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -10,7 +11,34 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Ambil Connection String Neon dari Environment Variable Vercel
+  // 1. PROTEKSI BROWSER (Jika diakses lewat browser/GET)
+  if (req.method === 'GET') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(403).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Nexus Mods Dev - Protected</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+          .card { text-align: center; padding: 2.5rem; border: 1px solid #334155; border-radius: 16px; background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 400px; }
+          h1 { color: #ef4444; margin-bottom: 0.5rem; font-size: 1.5rem; }
+          p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+          .badge { display: inline-block; margin-top: 1rem; padding: 0.4rem 0.8rem; background: #334155; color: #38bdf8; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>🔒 PROTECTED API ENDPOINT</h1>
+          <p>Akses langsung via Web Browser ditolak. Endpoint ini hanya menerima enkripsi data dari Game Guardian Executor via POST request.</p>
+          <div class="badge">NEXUS MODS DEV v1.0</div>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     return res.status(500).json({ 
@@ -21,7 +49,7 @@ export default async function handler(req, res) {
 
   const sql = neon(databaseUrl);
 
-  // Otomatis buat tabel 'scripts' di Neon DB jika belum ada
+  // Inisialisasi Otomatis Tabel 'scripts' di Neon DB
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS scripts (
@@ -36,26 +64,40 @@ export default async function handler(req, res) {
     console.error("Neon DB Init Table Error:", err);
   }
 
-  const { action, id, name, luaCode, expireDays } = req.body || {};
+  // Parse Body
+  let body = req.body || {};
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (e) {}
+  }
 
-  // 1. FETCH SCRIPT (Untuk Executor Roblox / Loader)
-  if (action === 'fetch') {
+  const { action, id, key, name, luaCode, expireDays } = body;
+  const targetId = id || key;
+
+  // 2. ACTION: FETCH / VALIDATE KEY (Dari Game Guardian via POST)
+  if (action === 'fetch' || action === 'validate_key') {
+    if (!targetId) {
+      return res.status(400).send("-- [Nexus Error] Key / Script ID wajib diisi!");
+    }
+
     try {
-      const rows = await sql`SELECT * FROM scripts WHERE id = ${id}`;
+      const rows = await sql`SELECT * FROM scripts WHERE id = ${targetId}`;
       if (rows.length === 0) {
-        return res.status(404).send("-- [Nexus Mods Dev] Error: Script tidak ditemukan.");
+        return res.status(404).send("-- [Nexus Error] Key tidak terdaftar atau invalid!");
       }
+
       const item = rows[0];
       if (Date.now() > Number(item.expires_at)) {
-        return res.status(403).send("-- [Nexus Mods Dev] Error: Masa aktif script ini telah EXPIRED!");
+        return res.status(403).send("-- [Nexus Error] Masa aktif Key ini telah EXPIRED!");
       }
+
+      // Kembalikan isi kode Lua untuk dieksekusi oleh Game Guardian
       return res.status(200).send(item.lua_code);
     } catch (e) {
-      return res.status(500).send("-- [Nexus Mods Dev] Database Fetch Error");
+      return res.status(500).send("-- [Nexus Error] Database Server Error");
     }
   }
 
-  // 2. CREATE SCRIPT
+  // 3. ACTION: CREATE (Deploy Script Baru)
   if (action === 'create') {
     try {
       const newId = Math.random().toString(36).substring(2, 10);
@@ -73,7 +115,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // 3. LIST ALL SCRIPTS
+  // 4. ACTION: LIST SCRIPTS
   if (action === 'list') {
     try {
       const rows = await sql`SELECT * FROM scripts ORDER BY created_at DESC`;
@@ -90,25 +132,10 @@ export default async function handler(req, res) {
     }
   }
 
-  // 4. UPDATE SCRIPT
-  if (action === 'update') {
-    try {
-      const expiresAt = Date.now() + (parseInt(expireDays) * 86400000);
-      await sql`
-        UPDATE scripts 
-        SET name = ${name}, lua_code = ${luaCode}, expires_at = ${expiresAt}
-        WHERE id = ${id}
-      `;
-      return res.status(200).json({ success: true });
-    } catch (e) {
-      return res.status(500).json({ success: false, message: e.message });
-    }
-  }
-
-  // 5. DELETE SCRIPT
+  // 5. ACTION: DELETE
   if (action === 'delete') {
     try {
-      await sql`DELETE FROM scripts WHERE id = ${id}`;
+      await sql`DELETE FROM scripts WHERE id = ${targetId}`;
       return res.status(200).json({ success: true });
     } catch (e) {
       return res.status(500).json({ success: false, message: e.message });
