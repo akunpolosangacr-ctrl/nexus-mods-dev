@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   let body = req.body || {};
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) {} }
-  const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
+  const { action, key, id, name, luaCode, expireDays, expireValue, expireUnit, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
   if (action === 'init') {
@@ -28,27 +28,6 @@ export default async function handler(req, res) {
     const loginUI = `
 local url = "${dynamicUrl}"
 local cfg_path = "/sdcard/.keysv"
-
--- Mengambil atau membuat Device UUID permanen yang disimpan di .keysv (tidak error & tidak berubah saat .keysv dihapus jika diambil dari cache atau digenerate stabil)
-local function getStableDeviceID()
-  local f = io.open(cfg_path, "r")
-  if f then
-    local content = f:read("*a")
-    f:close()
-    local lines = {}
-    for line in content:gmatch("[^\\r\\n]+") do
-      table.insert(lines, line)
-    end
-    if lines[2] and #lines[2] > 5 then
-      return lines[2]
-    elseif lines[1] and #lines[1] > 0 then
-      -- Jika .keysv hanya berisi key, buat UUID stabil berdasarkan panjang key & timestamp konstan
-      local generated = "DEV-" .. string.gsub(lines[1], "[^%w]", "") .. "-STABLE"
-      return generated
-    end
-  end
-  return "NEXUS-DEFAULT-DEVICE-ID"
-end
 
 local function getSavedKey()
   local f = io.open(cfg_path, "r")
@@ -62,11 +41,11 @@ local function getSavedKey()
   end
 end
 
-local function saveConfig(k, uuid, save)
+local function saveKey(k, save)
   if save then
     local f = io.open(cfg_path, "w")
     if f then 
-      f:write(k .. "\\n" .. uuid) 
+      f:write(k) 
       f:close() 
     end
   else
@@ -74,21 +53,6 @@ local function saveConfig(k, uuid, save)
   end
 end
 
--- Fallback jika file .keysv belum ada, buat UUID unik statis untuk sesi perangkat ini
-local temp_uuid = ""
-local f_check = io.open(cfg_path, "r")
-if f_check then
-  local content = f_check:read("*a")
-  f_check:close()
-  for line in content:gmatch("[^\\r\\n]+") do
-    if temp_uuid == "" then temp_uuid = line end
-  end
-end
-if temp_uuid == "" then
-  temp_uuid = "NEXUS-" .. math.random(100000, 999999)
-end
-
-local hw = temp_uuid
 local saved_k = getSavedKey()
 
 while true do
@@ -113,13 +77,13 @@ while true do
         gg.alert("❌ Key tidak boleh kosong!")
       else
         gg.toast("⏳ Validating Payload & Server...")
-        local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
+        local pl = '{"action":"validate_key", "key":"' .. user_key .. '"}'
         local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
 
         if r and r.content then 
           local f, e = load(r.content)
           if f then 
-            saveConfig(user_key, hw, is_remember)
+            saveKey(user_key, is_remember)
             f()
             
             pcall(function()
@@ -157,17 +121,6 @@ end
       const item = rows[0];
       if (Date.now() > Number(item.expires_at)) return res.status(200).send("License Expired");
 
-      let currentDevices = [];
-      try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
-      const reqDev = device_id || 'UNKNOWN';
-
-      if (!currentDevices.includes(reqDev)) {
-        if (currentDevices.length >= item.max_devices) {
-          return res.status(200).send("Max Devices Reached (" + item.max_devices + " devices)");
-        }
-        currentDevices.push(reqDev);
-        await sql`UPDATE scripts SET devices = ${JSON.stringify(currentDevices)} WHERE id = ${targetKey}`;
-      }
       return res.status(200).send(`gg.toast("Access Granted")\n` + item.lua_code);
     } catch (e) {
       return res.status(200).send("Server Error");
@@ -176,7 +129,13 @@ end
 
   if (action === 'create') {
     const fId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
-    const exp = Date.now() + ((parseInt(expireDays) || 30) * 86400000);
+    
+    // Perhitungan Expiry berdasarkan Unit (Menit atau Hari)
+    const val = parseInt(expireValue || expireDays) || 30;
+    const unit = expireUnit || 'days';
+    const multiplier = unit === 'minutes' ? 60000 : 86400000;
+    const exp = Date.now() + (val * multiplier);
+
     await sql`INSERT INTO scripts (id, name, lua_code, expires_at, created_at, max_devices, devices) VALUES (${fId}, ${name}, ${luaCode}, ${exp}, ${Date.now()}, ${parseInt(maxDevices) || 1}, '[]') ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, lua_code=EXCLUDED.lua_code, max_devices=EXCLUDED.max_devices;`;
     return res.status(200).json({ success: true });
   }

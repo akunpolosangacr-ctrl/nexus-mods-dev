@@ -94,6 +94,14 @@
     
     textarea { height: 140px; padding: 14px 16px; resize: vertical; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
 
+    /* Expiry Presets Styling */
+    .expiry-flex { display: flex; gap: 8px; }
+    .expiry-flex input { flex: 2; }
+    .expiry-flex select { flex: 1; background: var(--bg-input); border: 1px solid var(--border-focus); border-radius: var(--radius-md); color: var(--text-main); padding: 0 10px; height: 48px; font-weight: 600; outline: none; }
+    .expiry-presets { display: flex; gap: 6px; margin-top: 6px; }
+    .preset-btn { flex: 1; background: var(--bg-base); border: 1px solid var(--border-focus); color: var(--accent-blue); padding: 6px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; transition: var(--transition); }
+    .preset-btn:hover { background: rgba(59, 130, 246, 0.15); border-color: var(--accent-blue); }
+
     .file-upload-box { display: flex; flex-direction: column; gap: 8px; }
     .file-dropzone { border: 2px dashed var(--border-focus); border-radius: var(--radius-md); padding: 12px 16px; text-align: center; background: var(--bg-base); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; height: 46px; }
     .file-dropzone:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.05); }
@@ -247,8 +255,19 @@
           <input type="number" id="maxDevices" value="1" min="1">
         </div>
         <div>
-          <label>Masa Aktif (Hari)</label>
-          <input type="number" id="expireDays" value="30" min="1">
+          <label>Masa Aktif</label>
+          <div class="expiry-flex">
+            <input type="number" id="expireValue" value="30" min="1">
+            <select id="expireUnit">
+              <option value="days">Hari</option>
+              <option value="minutes">Menit</option>
+            </select>
+          </div>
+          <div class="expiry-presets">
+            <button type="button" class="preset-btn" onclick="setExpiry(1, 'minutes')">⚡ 1 Menit</button>
+            <button type="button" class="preset-btn" onclick="setExpiry(30, 'minutes')">⚡ 30 Menit</button>
+            <button type="button" class="preset-btn" onclick="setExpiry(30, 'days')">📅 30 Hari</button>
+          </div>
         </div>
         <div class="input-full">
           <label>Source Code Lua (Main)</label>
@@ -284,6 +303,11 @@
     function toggleMenu() {
       document.getElementById('sideDrawer').classList.toggle('active');
       document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
+    function setExpiry(val, unit) {
+      document.getElementById('expireValue').value = val;
+      document.getElementById('expireUnit').value = unit;
     }
 
     const showToast = (icon, title) => Swal.fire({ 
@@ -360,7 +384,7 @@
 
         let totalDevices = 0;
         container.innerHTML = data.scripts.map(s => {
-          const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
+          const exp = new Date(s.expiresAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
           const devList = s.devices ? JSON.parse(s.devices) : [];
           totalDevices += devList.length;
           return `
@@ -395,11 +419,16 @@
     async function createScript() {
       const name = document.getElementById('scriptName').value || 'Untitled Mod';
       const customKey = document.getElementById('customKey').value;
-      const expireDays = document.getElementById('expireDays').value || 30;
+      const expireValue = document.getElementById('expireValue').value || 30;
+      const expireUnit = document.getElementById('expireUnit').value || 'days';
       const maxDevices = document.getElementById('maxDevices').value || 1;
       const luaCode = document.getElementById('luaCode').value;
 
-      const res = await fetch(ADMIN_API, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'create', name, customKey, expireDays, maxDevices, luaCode }) });
+      const res = await fetch(ADMIN_API, { 
+        method: 'POST', 
+        headers: SECURE_HEADER, 
+        body: JSON.stringify({ action: 'create', name, customKey, expireValue, expireUnit, maxDevices, luaCode }) 
+      });
       const data = await res.json();
       
       if (data.success) {
