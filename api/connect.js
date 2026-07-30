@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - SCRIPT LUA DENGAN "enter key nexus", "Remember Key", "Exit", dan "gg.setVisible(false)" sleep loop anti-exit saat back
+  // INIT - SCRIPT LUA DENGAN PENANGANAN TOMBOL BACK (TIDAK ENDED KECUALI CENTANG EXIT) & VISIBILITY MANAJEMEN
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -59,9 +59,9 @@ local saved_k = getSavedKey()
 while true do
   local p = gg.prompt({"[ enter key nexus ]\\nInput License Key:", "Remember Key (Auto Login)", "Exit"}, {saved_k, true, false}, {"text", "checkbox", "checkbox"})
   
-  if not p then 
-    gg.alert("❌ Script dihentikan oleh pengguna.")
-    os.exit() 
+  -- Jika user menekan tombol Back / Cancel (p == nil), jangan ended script! Lanjutkan loop prompt
+  if not p then
+    goto continue
   end
 
   local user_key = p[1]
@@ -86,10 +86,12 @@ while true do
         saveKey(user_key, is_remember)
         f()
         
-        -- Mencegah menu ended saat ditekan back / hide UI menggunakan gg.setVisible(false) dan sleep loop
+        -- Loop penjagaan agar menu tidak ended saat di-back / hide UI dengan aman
         pcall(function()
-          gg.setVisible(false)
           while true do
+            if gg.isVisible() then
+              gg.setVisible(false)
+            end
             gg.sleep(1000)
           end
         end)
@@ -101,6 +103,7 @@ while true do
       gg.alert("❌ Gagal terhubung ke server!")
     end
   end
+  ::continue::
 end
     `;
     return res.status(200).send(loginUI);
@@ -156,5 +159,5 @@ end
     return res.status(200).json({ success: true });
   }
 
-    return res.status(400).json({ success: false });
+  return res.status(400).json({ success: false });
 }
