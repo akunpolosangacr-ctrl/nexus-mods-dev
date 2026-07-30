@@ -4,111 +4,156 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nexus Mods Dev - Dashboard Admin</title>
+  <!-- Load SweetAlert2 untuk Custom Popup -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Load Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0b0f19; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
-    .container { max-width: 700px; margin: 0 auto; }
+    .container { max-width: 800px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 25px; }
-    .header h1 { font-size: 24px; color: #38bdf8; }
-    .header p { color: #64748b; font-size: 14px; }
+    .header h1 { font-size: 26px; color: #38bdf8; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .header p { color: #64748b; font-size: 14px; margin-top: 5px; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
-    .card h2 { font-size: 16px; margin-bottom: 15px; color: #f8fafc; display: flex; align-items: center; gap: 8px; }
+    .card h2 { font-size: 16px; margin-bottom: 15px; color: #f8fafc; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
     .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 5px; }
-    input, textarea { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: #fff; font-size: 14px; outline: none; }
+    .form-row { display: flex; gap: 15px; }
+    .form-row .form-group { flex: 1; }
+    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 5px; font-weight: 500; }
+    input, textarea { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: #fff; font-size: 14px; outline: none; transition: border 0.2s; }
     input:focus, textarea:focus { border-color: #38bdf8; }
     textarea { height: 120px; font-family: monospace; resize: vertical; }
-    .btn { background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; width: 100%; margin-bottom: 10px; }
+    .btn { background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn:hover { background: #0369a1; }
     .btn-global { background: #10b981; }
     .btn-global:hover { background: #059669; }
-    .script-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
-    .script-item .title { font-weight: bold; color: #38bdf8; font-size: 15px; }
-    .script-item .key { font-family: monospace; color: #f59e0b; margin: 5px 0; font-size: 13px; }
-    .script-item .info { font-size: 12px; color: #64748b; margin-bottom: 10px; }
-    .btn-danger { background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;}
-    .btn-danger:hover { background: #b91c1c; }
+    .script-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .script-info { flex: 1; min-width: 250px; }
+    .script-item .title { font-weight: bold; color: #38bdf8; font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .script-item .key { font-family: monospace; color: #f59e0b; margin: 4px 0; font-size: 14px; background: #1e293b; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+    .script-item .details { font-size: 12px; color: #94a3b8; margin-top: 6px; display: flex; gap: 15px; }
+    .script-item .details span { display: flex; align-items: center; gap: 4px; }
+    .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-icon { display: flex; align-items: center; gap: 5px; padding: 8px 12px; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .btn-edit { background: #3b82f6; } .btn-edit:hover { background: #2563eb; }
+    .btn-danger { background: #ef4444; } .btn-danger:hover { background: #dc2626; }
+    .btn-reset { background: #f59e0b; } .btn-reset:hover { background: #d97706; }
+    
+    /* SweetAlert2 Dark Theme Customization */
+    .swal2-popup { background: #1e293b !important; color: #f1f5f9 !important; border: 1px solid #334155 !important; border-radius: 12px !important; }
+    .swal2-title { color: #38bdf8 !important; }
+    .swal2-input, .swal2-textarea { background: #0f172a !important; color: #fff !important; border: 1px solid #334155 !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🚀 Nexus Mods Dev</h1>
-      <p>Sistem Login Universal (Prompt Key di GG)</p>
+      <h1><i data-lucide="rocket"></i> Nexus Mods Dev</h1>
+      <p>Universal Loader & Device ID (HWID) Protection</p>
     </div>
 
     <!-- Tombol Universal Loader -->
     <div class="card" style="text-align: center;">
-      <h2>🔗 Script Loader Universal</h2>
-      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Salin script ini dan bagikan ke user. User akan diminta memasukkan Key saat menjalankannya di Game Guardian.</p>
-      <button class="btn btn-global" onclick="copyUniversalLoader()">Salin Universal Loader</button>
+      <h2><i data-lucide="link"></i> Script Loader Universal (Vercel Hidden)</h2>
+      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">URL disamarkan menjadi byte array. Aman dari inspeksi string.</p>
+      <button class="btn btn-global" onclick="copyUniversalLoader()"><i data-lucide="copy"></i> Salin Loader Universal</button>
     </div>
 
-    <!-- Form Create Key / Script -->
+    <!-- Form Create Key -->
     <div class="card">
-      <h2>🔑 Deploy Key / Script Baru</h2>
+      <h2><i data-lucide="key-round"></i> Deploy Key Baru</h2>
       <div class="form-group">
         <label>Nama Script / Mod</label>
         <input type="text" id="scriptName" placeholder="Contoh: Auto Farm VIP">
       </div>
-      <div class="form-group">
-        <label>Custom Key (Opsional - Kosongkan jika mau acak)</label>
-        <input type="text" id="customKey" placeholder="Contoh: NEXUS-VIP-123">
-      </div>
-      <div class="form-group">
-        <label>Masa Expired (Hari)</label>
-        <input type="number" id="expireDays" value="30">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Custom Key (Opsional)</label>
+          <input type="text" id="customKey" placeholder="Otomatis jika kosong">
+        </div>
+        <div class="form-group">
+          <label>Limit Device (HWID)</label>
+          <input type="number" id="maxDevices" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label>Expired (Hari)</label>
+          <input type="number" id="expireDays" value="30">
+        </div>
       </div>
       <div class="form-group">
         <label>Kode Lua Script Utama</label>
         <textarea id="luaCode" placeholder="gg.alert('Welcome VIP User!')"></textarea>
       </div>
-      <button class="btn" onclick="createScript()">Simpan & Deploy Key</button>
+      <button class="btn" onclick="createScript()"><i data-lucide="send"></i> Simpan & Deploy Key</button>
     </div>
 
     <!-- List Key / Script -->
     <div class="card">
-      <h2>📜 Daftar Key Terdaftar</h2>
-      <div id="scriptList">Memuat data dari Neon DB...</div>
+      <h2><i data-lucide="list"></i> Daftar Key Terdaftar</h2>
+      <div id="scriptList">
+        <p style="text-align: center; color: #64748b; font-size: 13px;"><i data-lucide="loader-2" class="lucide-spin"></i> Memuat data...</p>
+      </div>
     </div>
   </div>
 
   <script>
     const API_URL = '/api/connect';
+    const SECURE_HEADER = { 'Content-Type': 'application/json', 'X-Nexus-Shield': 'Active' };
 
-    // Menyalin Loader Universal (Hanya request 'init' tanpa key)
+    // Inisialisasi Icon
+    lucide.createIcons();
+
+    // Custom Alert Notification
+    const showToast = (icon, title) => {
+      Swal.fire({ toast: true, position: 'top-end', icon, title, showConfirmButton: false, timer: 3000 });
+    };
+
+    // Fungsi Obfuscate URL agar Vercel disamarkan menjadi Byte Array
     function copyUniversalLoader() {
-      const loaderCode = `local url = "https://nexus-mods-dev.vercel.app/api/connect"\nlocal r = gg.makeRequest(url, {["Content-Type"]="application/json"}, '{"action":"init"}')\nif r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server!") end`;
+      const fullUrl = window.location.origin + "/api/connect";
+      const charArray = fullUrl.split('').map(c => c.charCodeAt(0)).join(',');
+      
+      const loaderCode = `local t = {${charArray}}\nlocal url = ""\nfor i=1, #t do url = url .. string.char(t[i]) end\nlocal r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, '{"action":"init"}')\nif r and r.content then load(r.content)() else gg.alert("Gagal koneksi ke server!") end`;
+      
       navigator.clipboard.writeText(loaderCode);
-      alert('Universal Loader berhasil disalin!\nBagikan script ini ke user.');
+      Swal.fire('Berhasil Disalin!', 'Script Loader berhasil di-copy. Domain kamu aman disamarkan menjadi byte array.', 'success');
     }
 
     async function loadScripts() {
       const container = document.getElementById('scriptList');
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'list' })
-        });
+        const res = await fetch(API_URL, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'list' }) });
         const data = await res.json();
 
         if (!data.success || !data.scripts.length) {
-          container.innerHTML = '<p style="color:#64748b; font-size:13px;">Belum ada key/script terdaftar di database.</p>';
+          container.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Belum ada key terdaftar.</p>';
           return;
         }
 
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
+          const registeredDevices = s.devices ? JSON.parse(s.devices).length : 0;
+          
           return `
             <div class="script-item">
-              <div class="title">${s.name}</div>
-              <div class="key">🔑 Key: <b>${s.key}</b></div>
-              <div class="info">Masa Aktif s/d: ${exp}</div>
-              <button class="btn-danger" onclick="deleteScript('${s.key}')">Hapus Key</button>
+              <div class="script-info">
+                <div class="title">${s.name}</div>
+                <div class="key">🔑 ${s.key}</div>
+                <div class="details">
+                  <span><i data-lucide="calendar" style="width:14px;height:14px;"></i> S/d: ${exp}</span>
+                  <span><i data-lucide="smartphone" style="width:14px;height:14px;"></i> Device: ${registeredDevices} / ${s.maxDevices}</span>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button class="btn-icon btn-reset" onclick="resetHWID('${s.key}')" title="Reset Devices"><i data-lucide="refresh-cw" style="width:14px;"></i> Reset</button>
+                <button class="btn-icon btn-edit" onclick="editScript('${s.key}', '${s.name}', ${s.maxDevices})" title="Edit"><i data-lucide="edit" style="width:14px;"></i> Edit</button>
+                <button class="btn-icon btn-danger" onclick="deleteScript('${s.key}')" title="Hapus"><i data-lucide="trash-2" style="width:14px;"></i></button>
+              </div>
             </div>
           `;
         }).join('');
+        lucide.createIcons();
       } catch (e) {
         container.innerHTML = '<p style="color:#ef4444; font-size:13px;">Gagal mengambil data dari database.</p>';
       }
@@ -118,33 +163,73 @@
       const name = document.getElementById('scriptName').value || 'Untitled Script';
       const customKey = document.getElementById('customKey').value;
       const expireDays = document.getElementById('expireDays').value || 30;
+      const maxDevices = document.getElementById('maxDevices').value || 1;
       const luaCode = document.getElementById('luaCode').value || 'gg.toast("Hello World")';
 
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create', name, customKey, expireDays, luaCode })
+        headers: SECURE_HEADER,
+        body: JSON.stringify({ action: 'create', name, customKey, expireDays, maxDevices, luaCode })
       });
       const data = await res.json();
       if (data.success) {
-        alert('Key berhasil dibuat! Key ID: ' + data.key);
+        showToast('success', 'Key berhasil di-deploy!');
         document.getElementById('scriptName').value = '';
         document.getElementById('customKey').value = '';
-        document.getElementById('luaCode').value = '';
         loadScripts();
       } else {
-        alert('Gagal: ' + data.message);
+        Swal.fire('Gagal', data.message, 'error');
+      }
+    }
+
+    async function editScript(key, oldName, oldMaxDevices) {
+      const { value: formValues } = await Swal.fire({
+        title: 'Edit Pengaturan Key',
+        html: `
+          <div style="text-align:left;">
+            <label style="color:#94a3b8; font-size:12px;">Nama Script</label>
+            <input id="swal-name" class="swal2-input" value="${oldName}" style="width:90%; margin: 5px 0 15px 0;">
+            <label style="color:#94a3b8; font-size:12px;">Limit Devices (HWID)</label>
+            <input id="swal-max" type="number" class="swal2-input" value="${oldMaxDevices}" style="width:90%; margin: 5px 0 15px 0;">
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Perubahan',
+        preConfirm: () => {
+          return {
+            name: document.getElementById('swal-name').value,
+            maxDevices: document.getElementById('swal-max').value
+          }
+        }
+      });
+
+      if (formValues) {
+        await fetch(API_URL, {
+          method: 'POST', headers: SECURE_HEADER,
+          body: JSON.stringify({ action: 'edit', key, name: formValues.name, maxDevices: formValues.maxDevices })
+        });
+        showToast('success', 'Key berhasil di-update!');
+        loadScripts();
+      }
+    }
+
+    async function resetHWID(key) {
+      const result = await Swal.fire({ title: 'Reset HWID?', text: "Semua device terdaftar akan dihapus untuk key ini.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#f59e0b', confirmButtonText: 'Ya, Reset!' });
+      if (result.isConfirmed) {
+        await fetch(API_URL, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'reset_hwid', key }) });
+        showToast('success', 'HWID berhasil di-reset!');
+        loadScripts();
       }
     }
 
     async function deleteScript(key) {
-      if (!confirm('Yakin ingin menghapus key ini?')) return;
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', key })
-      });
-      loadScripts();
+      const result = await Swal.fire({ title: 'Hapus Key?', text: "Data tidak bisa dikembalikan!", icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!' });
+      if (result.isConfirmed) {
+        await fetch(API_URL, { method: 'POST', headers: SECURE_HEADER, body: JSON.stringify({ action: 'delete', key }) });
+        showToast('success', 'Key dihapus!');
+        loadScripts();
+      }
     }
 
     loadScripts();
