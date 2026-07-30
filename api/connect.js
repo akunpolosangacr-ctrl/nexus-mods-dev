@@ -10,29 +10,6 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 1. PROTEKSI BROWSER (Akses GET ke API Ditolak)
-  if (req.method === 'GET') {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(403).send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Access Protected</title>
-        <style>
-          body { background: #0f172a; color: #ef4444; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-          .box { background: #1e293b; padding: 30px; border-radius: 12px; border: 1px solid #334155; }
-        </style>
-      </head>
-      <body>
-        <div class="box">
-          <h2>🔒 PROTECTED API ENDPOINT</h2>
-          <p style="color: #94a3b8; margin-top: 10px;">Akses langsung via Browser Ditolak. Gunakan Web Dashboard di halaman utama.</p>
-        </div>
-      </body>
-      </html>
-    `);
-  }
-
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     return res.status(500).json({ success: false, message: "DATABASE_URL belum terpasang!" });
@@ -62,30 +39,6 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey } = body;
   const targetKey = key || id;
 
-  // 2. VALIDASI KEY DARI GAME GUARDIAN
-  if (action === 'validate_key' || action === 'fetch') {
-    if (!targetKey) {
-      return res.status(400).send("gg.alert('❌ Key wajib diisi!') os.exit()");
-    }
-
-    try {
-      const rows = await sql`SELECT * FROM scripts WHERE id = ${targetKey}`;
-      if (rows.length === 0) {
-        return res.status(404).send("gg.alert('❌ Key INVALID atau Tidak Terdaftar di Database Nexus!') os.exit()");
-      }
-
-      const item = rows[0];
-      if (Date.now() > Number(item.expires_at)) {
-        return res.status(403).send("gg.alert('⛔ Key ini sudah EXPIRED!') os.exit()");
-      }
-
-      return res.status(200).send(item.lua_code);
-    } catch (e) {
-      return res.status(500).send("gg.alert('❌ Database Error!') os.exit()");
-    }
-  }
-
-  // 3. CREATE KEY
   if (action === 'create') {
     try {
       const finalId = customKey && customKey.trim() !== '' ? customKey.trim() : Math.random().toString(36).substring(2, 10);
@@ -105,7 +58,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // 4. LIST KEYS
   if (action === 'list') {
     try {
       const rows = await sql`SELECT * FROM scripts ORDER BY created_at DESC`;
@@ -121,7 +73,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // 5. DELETE KEY
   if (action === 'delete') {
     try {
       await sql`DELETE FROM scripts WHERE id = ${targetKey}`;

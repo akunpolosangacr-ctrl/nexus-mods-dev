@@ -1,23 +1,20 @@
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  // Proteksi Browser & Harus POST
   if (req.method !== 'POST') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(403).send(`
       <body style="background:#090d16;color:#ef4444;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;">
         <div style="background:#111827;padding:30px;border-radius:12px;border:1px solid #1f2937;text-align:center;max-width:400px;">
-          <h2>🔒 STAGE 2 PROTECTED (/s.php)</h2>
-          <p style="color:#9ca3af;font-size:14px;margin-top:10px;">Metode Akses Ditolak! Membutuhkan Enkripsi POST Request.</p>
+          <h2>🔒 PROTECTED ACCESS DENIED (/s.php)</h2>
+          <p style="color:#9ca3af;font-size:14px;margin-top:10px;">Hanya menerima metode POST Request dari Executor Game Guardian!</p>
         </div>
       </body>
     `);
   }
 
-  // Kembalikan Kode Menu Key (URL 3)
-  const luaStage3 = `
--- Override warn global agar tidak memicu error Luaj
-warn = function(msg) if gg then gg.toast("⚠️ " .. tostring(msg)) end end
+  // Mengembalikan UI Menu Input Key Game Guardian
+  const luaStage3 = `warn = function(msg) if gg then gg.toast("⚠️ " .. tostring(msg)) end end
 
 local KEY_FILE = gg.EXT_STORAGE .. "/nexus_key.dat"
 local function getSavedKey()
@@ -38,14 +35,14 @@ local input = gg.prompt(
 )
 
 if not input or input[1] == "" then
-    gg.alert("❌ Masukkan Key valid untuk melanjutkan!")
+    gg.alert("❌ Key tidak boleh kosong!")
     os.exit()
 end
 
 local userKey = tostring(input[1]):gsub("%s+", "")
 if input[2] then saveKey(userKey) end
 
-gg.toast("⏳ Memverifikasi Key ke Database Nexus...")
+gg.toast("⏳ Memverifikasi Key ke Server Database...")
 
 local url = "https://nexus-mods-dev.vercel.app/validate.php"
 local body = '{"key":"' .. userKey .. '"}'
@@ -59,15 +56,14 @@ end
 
 local f, err = load(r.content)
 if not f then
-    gg.alert("Erro ao carregar script base:\\n\\n" .. tostring(err))
+    gg.alert("Erro ao carregar:\\n\\n" .. tostring(err))
     os.exit()
 end
 
 local ok, runtime = pcall(f)
 if not ok then
-    gg.alert("Erro na execução do script base:\\n\\n" .. tostring(runtime))
-end
-  `;
+    gg.alert("Erro durante a execução:\\n\\n" .. tostring(runtime))
+end`;
 
   return res.status(200).send(luaStage3);
 }

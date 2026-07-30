@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus Mods Dev - Key & Base Lua Manager</title>
+  <title>Nexus Mods Dev - Base Lua & Key Manager</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0b0f19; color: #f1f5f9; font-family: system-ui, sans-serif; padding: 20px; }
@@ -15,7 +15,7 @@
     textarea { height: 120px; font-family: monospace; }
     button { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
     .item { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
-    .item-key { color: #f59e0b; font-family: monospace; font-weight: bold; }
+    .item-key { color: #f59e0b; font-family: monospace; font-weight: bold; margin: 5px 0; }
     .btn-danger { background: #dc2626; margin-top: 8px; padding: 6px; font-size: 12px; }
   </style>
 </head>
@@ -26,7 +26,7 @@
     <div class="card">
       <h3>➕ Tambah Key & Base Lua Script</h3>
       <label>Custom Key (Bisa diisi bebas, e.g. NEXUS-VIP-01)</label>
-      <input type="text" id="customKey" placeholder="GANTENG30HARI">
+      <input type="text" id="customKey" placeholder="NEXUS-VIP-01">
       
       <label>Nama Script / Mod</label>
       <input type="text" id="scriptName" placeholder="Auto Farm VIP">
@@ -34,15 +34,15 @@
       <label>Masa Expired (Hari)</label>
       <input type="number" id="expireDays" value="30">
 
-      <label>Base .lua Code Asli (Script Mod/Cheat Kamu)</label>
-      <textarea id="luaCode" placeholder="gg.toast('Hello World!') gg.alert('Menu Active')"></textarea>
+      <label>Base .lua Code Asli (Script Cheat/Mod Kamu)</label>
+      <textarea id="luaCode" placeholder="gg.alert('Menu Mod Aktif!')"></textarea>
 
       <button onclick="saveKey()">Simpan ke Database Neon</button>
     </div>
 
     <div class="card">
       <h3>📜 Daftar Key Terdaftar</h3>
-      <div id="keyList">Memuat...</div>
+      <div id="keyList">Memuat data dari Neon DB...</div>
     </div>
   </div>
 
@@ -56,7 +56,7 @@
       const data = await res.json();
       const div = document.getElementById('keyList');
       if (!data.scripts || !data.scripts.length) {
-        div.innerHTML = '<p style="color:#64748b; font-size:12px;">Belum ada key.</p>';
+        div.innerHTML = '<p style="color:#64748b; font-size:12px;">Belum ada key terdaftar.</p>';
         return;
       }
       div.innerHTML = data.scripts.map(s => `
@@ -82,7 +82,7 @@
       });
       const data = await res.json();
       if(data.success) {
-        alert('Key Berhasil Disimpan!');
+        alert('Key Berhasil Disimpan di Database!');
         document.getElementById('customKey').value = '';
         document.getElementById('luaCode').value = '';
         loadKeys();
