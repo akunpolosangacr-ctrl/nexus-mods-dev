@@ -20,7 +20,6 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - SCRIPT LUA DENGAN AUTO-DETECT DEVICE SYSTEM (PERMANEN BERBASIS ANDROID SYSTEM ID)
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -28,40 +27,45 @@ export default async function handler(req, res) {
 
     const loginUI = `
 local url = "${dynamicUrl}"
-local cfg_path = "/sdcard/.svkeynexus"
+local cfg_path = "/sdcard/.keysv"
 
--- Auto-detect Hardware / System ID secara permanen (Tidak berubah meskipun file lokal dihapus)
-local function getSystemDeviceID()
-  local handle = io.popen("settings get secure android_id 2>/dev/null")
-  local id = handle and handle:read("*a") or ""
-  if handle then handle:close() end
-  id = id:gsub("%s+", "")
-  
-  if id == "" or id == "nil" or id == "null" then
-    local h2 = io.popen("getprop ro.product.model 2>/dev/null")
-    id = h2 and h2:read("*a") or "NEXUS_DEVICE"
-    if h2 then h2:close() end
-    id = id:gsub("%s+", "")
-  end
-  return id
-end
-
-local function getSavedKey()
+-- Mengambil atau membuat Persistent Device UUID secara aman tanpa io.popen (tersimpan di .keysv)
+local function getPersistentDeviceID()
   local f = io.open(cfg_path, "r")
-  if f then local k = f:read("*a") f:close() return k else return "" end
+  if f then
+    local content = f:read("*a")
+    f:close()
+    local lines = {}
+    for line in content:gmatch("[^\\r\\n]+") do
+      table.insert(lines, line)
+    end
+    -- Baris kedua adalah Device UUID
+    if lines[2] and #lines[2] > 5 then
+      return lines[2], lines[1]
+    elseif lines[1] and #lines[1] > 0 then
+      -- Jika sebelumnya hanya menyimpan key, generate UUID baru dan simpan keduanya
+      local new_uuid = string.format("%08x-%04x-%04x-%04x-%012x", math.random(0,0xffffffff), math.random(0,0xffff), math.random(0,0xffff), math.random(0,0xffff), math.random(0,0xffffffffffff))
+      return new_uuid, lines[1]
+    end
+  end
+  -- Generate UUID baru untuk perangkat ini
+  local new_uuid = string.format("%08x-%04x-%04x-%04x-%012x", math.random(0,0xffffffff), math.random(0,0xffff), math.random(0,0xffff), math.random(0,0xffff), math.random(0,0xffffffffffff))
+  return new_uuid, ""
 end
 
-local function saveKey(k, save)
+local function saveConfig(k, uuid, save)
   if save then
     local f = io.open(cfg_path, "w")
-    if f then f:write(k) f:close() end
+    if f then 
+      f:write(k .. "\\n" .. uuid) 
+      f:close() 
+    end
   else
     os.remove(cfg_path)
   end
 end
 
-local hw = getSystemDeviceID()
-local saved_k = getSavedKey()
+local hw, saved_k = getPersistentDeviceID()
 
 while true do
   if gg.isVisible() then
@@ -84,14 +88,14 @@ while true do
       if user_key == "" then
         gg.alert("❌ Key tidak boleh kosong!")
       else
-        gg.toast("⏳ Validating Payload & Device...")
+        gg.toast("⏳ Validating Payload & Devices...")
         local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
         local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
 
         if r and r.content then 
           local f, e = load(r.content)
           if f then 
-            saveKey(user_key, is_remember)
+            saveConfig(user_key, hw, is_remember)
             f()
             
             pcall(function()
@@ -120,7 +124,6 @@ end
     return res.status(200).send(loginUI);
   }
 
-  // VALIDATE KEY & PAYLOAD VERIFICATION
   if (action === 'validate_key') {
     if (!targetKey) return res.status(200).send("Key Invalid");
     try {
@@ -134,7 +137,6 @@ end
       try { currentDevices = JSON.parse(item.devices || '[]'); } catch(e) {}
       const reqDev = device_id || 'UNKNOWN';
 
-      // Verifikasi & Auto-Register Device berbasis System ID permanen
       if (!currentDevices.includes(reqDev)) {
         if (currentDevices.length >= item.max_devices) {
           return res.status(200).send("Max Devices Reached (" + item.max_devices + " devices)");

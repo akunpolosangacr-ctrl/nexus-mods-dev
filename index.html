@@ -46,12 +46,37 @@
     
     .app-container { width: 100%; max-width: 850px; margin: 0 auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
 
-    .app-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--bg-surface-glass); backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    /* Header & Menu Icon (-) */
+    .app-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg-surface-glass); backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    
+    .menu-btn { width: 40px; height: 40px; background: var(--bg-base); border: 1px solid var(--border-focus); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); transition: var(--transition); }
+    .menu-btn:hover { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+    
     .header-logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent-blue), #8B5CF6); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow); flex-shrink: 0; }
     .header-logo i { color: #fff; width: 22px; height: 22px; }
+    
     .header-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2; }
     .header-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-top: 1px; }
 
+    /* Sidebar Drawer & Blur Overlay */
+    .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 999; opacity: 0; visibility: hidden; transition: var(--transition); }
+    .drawer-overlay.active { opacity: 1; visibility: visible; }
+    
+    .side-drawer { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: var(--bg-surface); border-right: 1px solid var(--border-light); z-index: 1000; display: flex; flex-direction: column; padding: 24px; gap: 20px; transition: var(--transition); box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+    .side-drawer.active { left: 0; }
+    
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; }
+    .drawer-title { font-size: 18px; font-weight: 800; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
+    
+    .drawer-content { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; }
+    .tracking-box { background: var(--bg-base); border: 1px solid var(--border-focus); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .tracking-box h4 { font-size: 13px; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .tracking-log-item { font-family: monospace; font-size: 11px; color: var(--text-muted); background: #0f172a; padding: 6px; border-radius: 6px; border: 1px solid var(--border-light); }
+
+    .drawer-footer { border-top: 1px solid var(--border-light); padding-top: 16px; }
+
+    /* Glassmorphism Cards */
     .glass-card { background: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: var(--transition); }
     .glass-card:hover { border-color: var(--border-focus); box-shadow: var(--shadow-glow); }
     
@@ -127,15 +152,43 @@
 </head>
 <body>
 
+  <!-- Sidebar Drawer & Blur Overlay -->
+  <div id="drawerOverlay" class="drawer-overlay" onclick="toggleMenu()"></div>
+  <nav id="sideDrawer" class="side-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <i data-lucide="shield"></i> Nexus Control
+      </div>
+      <button class="menu-btn" onclick="toggleMenu()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+    </div>
+    <div class="drawer-content">
+      <div class="tracking-box">
+        <h4><i data-lucide="cpu" style="width:14px;height:14px;color:var(--accent-blue);"></i> Devices Tracking</h4>
+        <div class="tracking-log-item" id="deviceCountLog">Active DB Nodes: Syncing...</div>
+      </div>
+      <div class="tracking-box">
+        <h4><i data-lucide="terminal" style="width:14px;height:14px;color:var(--accent-emerald);"></i> Server Logs</h4>
+        <div class="tracking-log-item">[INFO] Security Shield: Active</div>
+        <div class="tracking-log-item">[INFO] Storage: .keysv Ready</div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-emerald" style="height: 42px; font-size: 14px;" onclick="toggleMenu()">Close Menu</button>
+    </div>
+  </nav>
+
   <main class="app-container">
     
     <header class="app-header fade-in-up" style="animation-delay: 0s;">
-      <div class="header-logo">
-        <i data-lucide="shield-check"></i>
-      </div>
-      <div class="header-text">
-        <h1>NEXUS ADMIN</h1>
-        <p>Advanced Security & Device Limit Management</p>
+      <div class="header-left">
+        <button class="menu-btn" onclick="toggleMenu()" title="Open Menu"><i data-lucide="minus" style="width:20px;height:20px;"></i></button>
+        <div class="header-logo">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div class="header-text">
+          <h1>NEXUS ADMIN</h1>
+          <p>Advanced Security & Devices Limit Management</p>
+        </div>
       </div>
     </header>
 
@@ -232,6 +285,12 @@
 
     lucide.createIcons();
     
+    // Toggle Sidebar Menu (-)
+    function toggleMenu() {
+      document.getElementById('sideDrawer').classList.toggle('active');
+      document.getElementById('drawerOverlay').classList.toggle('active');
+    }
+
     const showToast = (icon, title) => Swal.fire({ 
       toast: true, position: 'top-end', icon, title, 
       showConfirmButton: false, timer: 3000, 
@@ -300,12 +359,15 @@
         if (!data.success || !data.scripts.length) { 
           container.innerHTML = '<div style="text-align:center; padding: 30px 0; color:#94A3B8; font-weight:600; font-size:13px;"><i data-lucide="folder-search" style="width:40px;height:40px;margin-bottom:8px;opacity:0.5;"></i><br>Database Kosong. Belum ada key terdaftar.</div>'; 
           lucide.createIcons();
+          document.getElementById('deviceCountLog').textContent = 'Active DB Nodes: 0 Keys';
           return; 
         }
 
+        let totalDevices = 0;
         container.innerHTML = data.scripts.map(s => {
           const exp = new Date(s.expiresAt).toLocaleDateString('id-ID');
-          const devCount = s.devices ? JSON.parse(s.devices).length : 0;
+          const devList = s.devices ? JSON.parse(s.devices) : [];
+          totalDevices += devList.length;
           return `
             <article class="db-item fade-in-up">
               <div class="db-info">
@@ -315,7 +377,7 @@
                 </div>
                 <div class="chip-group">
                   <span class="chip"><i data-lucide="calendar" style="width:13px;height:13px;"></i> Exp: ${exp}</span>
-                  <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> Devices: ${devCount} / ${s.maxDevices}</span>
+                  <span class="chip"><i data-lucide="smartphone" style="width:13px;height:13px;"></i> Devices: ${devList.length} / ${s.maxDevices}</span>
                 </div>
               </div>
               <div class="db-actions">
@@ -326,6 +388,8 @@
               </div>
             </article>`;
         }).join('');
+        
+        document.getElementById('deviceCountLog').textContent = `Total Tracked Devices: ${totalDevices}`;
         lucide.createIcons();
       } catch (e) { 
         container.innerHTML = '<div style="text-align:center; padding: 30px 0; color:#EF4444; font-weight:600; font-size:13px;"><i data-lucide="wifi-off" style="width:40px;height:40px;margin-bottom:8px;"></i><br>Gagal Terhubung ke Database Server.</div>'; 
