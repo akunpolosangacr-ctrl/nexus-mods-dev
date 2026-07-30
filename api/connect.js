@@ -20,7 +20,6 @@ export default async function handler(req, res) {
   const { action, key, id, name, luaCode, expireDays, customKey, maxDevices, device_id } = body;
   const targetKey = key || id;
 
-  // INIT - SCRIPT LUA DENGAN PENANGANAN TOMBOL BACK (TIDAK ENDED KECUALI CENTANG EXIT) & VISIBILITY MANAJEMEN
   if (action === 'init') {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
@@ -57,53 +56,57 @@ local hw = getID()
 local saved_k = getSavedKey()
 
 while true do
-  local p = gg.prompt({"[ enter key nexus ]\\nInput License Key:", "Remember Key (Auto Login)", "Exit"}, {saved_k, true, false}, {"text", "checkbox", "checkbox"})
-  
-  -- Jika user menekan tombol Back / Cancel (p == nil), jangan ended script! Lanjutkan loop prompt
-  if not p then
-    goto continue
-  end
+  if gg.isVisible() then
+    local p = gg.prompt({
+      "💎 Nexus Auth 🛡️\\n⚡ Input License Key:", 
+      "Save Key Input", 
+      "Exit Script"
+    }, {saved_k, true, false}, {"text", "checkbox", "checkbox"})
+    
+    if p then
+      local user_key = p[1]
+      local is_remember = p[2]
+      local is_exit = p[3]
 
-  local user_key = p[1]
-  local is_remember = p[2]
-  local is_exit = p[3]
-
-  if is_exit then
-    gg.alert("❌ Script dihentikan.")
-    os.exit()
-  end
-
-  if user_key == "" then
-    gg.alert("❌ Key tidak boleh kosong!")
-  else
-    gg.toast("⏳ Validating Key & Devices...")
-    local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
-    local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
-
-    if r and r.content then 
-      local f, e = load(r.content)
-      if f then 
-        saveKey(user_key, is_remember)
-        f()
-        
-        -- Loop penjagaan agar menu tidak ended saat di-back / hide UI dengan aman
-        pcall(function()
-          while true do
-            if gg.isVisible() then
-              gg.setVisible(false)
-            end
-            gg.sleep(1000)
-          end
-        end)
-        break
-      else 
-        gg.alert("❌ " .. r.content)
+      if is_exit then
+        gg.alert("❌ Script dihentikan.")
+        os.exit()
       end
-    else 
-      gg.alert("❌ Gagal terhubung ke server!")
+
+      if user_key == "" then
+        gg.alert("❌ Key tidak boleh kosong!")
+      else
+        gg.toast("⏳ Validating Key & Devices...")
+        local pl = '{"action":"validate_key", "key":"' .. user_key .. '", "device_id":"' .. hw .. '"}'
+        local r = gg.makeRequest(url, {["Content-Type"]="application/json", ["X-Nexus-Shield"]="Active"}, pl)
+
+        if r and r.content then 
+          local f, e = load(r.content)
+          if f then 
+            saveKey(user_key, is_remember)
+            f()
+            
+            pcall(function()
+              while true do
+                if gg.isVisible() then
+                  gg.setVisible(false)
+                end
+                gg.sleep(1000)
+              end
+            end)
+            break
+          else 
+            gg.alert("❌ " .. r.content)
+          end
+        else 
+          gg.alert("❌ Gagal terhubung ke server!")
+        end
+      end
+    else
+      gg.setVisible(false)
     end
   end
-  ::continue::
+  gg.sleep(300)
 end
     `;
     return res.status(200).send(loginUI);
